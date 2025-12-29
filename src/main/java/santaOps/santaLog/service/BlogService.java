@@ -1,0 +1,19 @@
+package santaOps.santaLog.service;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import santaOps.santaLog.domain.Article;
+import santaOps.santaLog.dto.AddArticleRequest;
+import santaOps.santaLog.repository.BlogRepository;
+
+@RequiredArgsConstructor
+@Service
+public class BlogService {
+
+    private final BlogRepository blogRepository;
+
+    public Article save(AddArticleRequest request){
+        return blogRepository.save(request.toEntity());
+    }
+
+}
