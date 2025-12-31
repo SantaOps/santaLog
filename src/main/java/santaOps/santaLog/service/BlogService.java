@@ -1,5 +1,6 @@
 package santaOps.santaLog.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import santaOps.santaLog.domain.Article;
@@ -28,6 +29,14 @@ public class BlogService {
 
     public void delete(long id){
         blogRepository.deleteById(id);
+    }
+
+    @Transactional
+    public Article update(long id, Article request){
+        Article article = blogRepository.findById(id).orElseThrow(()->new IllegalArgumentException("not fond: "+ id));
+        article.setTitle(request.getTitle());
+        article.setContent(request.getContent());
+        return article;
     }
 
 
