@@ -13,20 +13,20 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/")
 public class BlogApiController {
 //TODO: 응답 형태 공통으로 묶기
 
     private final BlogService blogService;
 
-    @PostMapping("/articles")
+    @PostMapping("articles")
     public ResponseEntity<Article> addArticle(@RequestBody AddArticleRequest request){
         Article savedArticle = blogService.save(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(savedArticle);
     }
 
-    @GetMapping("/articles")
+    @GetMapping("articles")
     public ResponseEntity<List<ArticleResponse>> findAllArticles(){
         List<ArticleResponse> articles = blogService.findAll()
                 .stream()
@@ -36,11 +36,16 @@ public class BlogApiController {
         return ResponseEntity.ok().body(articles);
     }
 
-    @GetMapping("/articles/{id}")
+    @GetMapping("articles/{id}")
     public ResponseEntity<ArticleResponse> findArticle(@PathVariable long id){
         Article article = blogService.findById(id);
         return ResponseEntity.ok().body(new ArticleResponse(article));
     }
 
+    @DeleteMapping("articles/{id}")
+    public ResponseEntity<Void> deleteArticle (@PathVariable long id){
+        blogService.delete(id);
+        return ResponseEntity.ok().build();
+    }
 
 }
