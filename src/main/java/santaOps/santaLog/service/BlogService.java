@@ -6,6 +6,8 @@ import santaOps.santaLog.domain.Article;
 import santaOps.santaLog.dto.AddArticleRequest;
 import santaOps.santaLog.repository.BlogRepository;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Service
 public class BlogService {
@@ -14,6 +16,10 @@ public class BlogService {
 
     public Article save(AddArticleRequest request){
         return blogRepository.save(request.toEntity());
+    }
+
+    public List<Article> findAll() {
+        return blogRepository.findAll();
     }
 
 }
