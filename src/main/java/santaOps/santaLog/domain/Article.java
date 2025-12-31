@@ -4,6 +4,10 @@ package santaOps.santaLog.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.extern.apachecommons.CommonsLog;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -21,6 +25,14 @@ public class Article {
 
     @Column(name="content", nullable = false)
     private String content;
+
+    @CreatedDate
+    @Column(name="created_at")
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column(name="updated_at")
+    private LocalDateTime updateAt;
 
     @Builder
     public Article(String title, String content){

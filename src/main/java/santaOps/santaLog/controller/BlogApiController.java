@@ -9,6 +9,7 @@ import santaOps.santaLog.dto.AddArticleRequest;
 import santaOps.santaLog.dto.ArticleResponse;
 import santaOps.santaLog.service.BlogService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -20,8 +21,14 @@ public class BlogApiController {
     private final BlogService blogService;
 
     @PostMapping("articles")
-    public ResponseEntity<Article> addArticle(@RequestBody AddArticleRequest request){
-        Article savedArticle = blogService.save(request);
+    public ResponseEntity<Article> addArticle(@RequestBody Article request){
+        Article savedArticle = request;
+        if (savedArticle.getCreatedAt()==null){
+           savedArticle.setCreatedAt(LocalDateTime.now());
+            savedArticle.setUpdateAt(LocalDateTime.now());
+        }
+         blogService.save(savedArticle);
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(savedArticle);
     }

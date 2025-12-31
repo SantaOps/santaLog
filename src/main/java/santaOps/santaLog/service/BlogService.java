@@ -7,6 +7,7 @@ import santaOps.santaLog.domain.Article;
 import santaOps.santaLog.dto.AddArticleRequest;
 import santaOps.santaLog.repository.BlogRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -15,8 +16,8 @@ public class BlogService {
 
     private final BlogRepository blogRepository;
 
-    public Article save(AddArticleRequest request){
-        return blogRepository.save(request.toEntity());
+    public Article save(Article request){
+        return blogRepository.save(request);
     }
 
     public List<Article> findAll() {
@@ -36,6 +37,7 @@ public class BlogService {
         Article article = blogRepository.findById(id).orElseThrow(()->new IllegalArgumentException("not fond: "+ id));
         article.setTitle(request.getTitle());
         article.setContent(request.getContent());
+        article.setUpdateAt(LocalDateTime.now());
         return article;
     }
 
