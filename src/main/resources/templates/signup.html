@@ -12,6 +12,9 @@
     </style>
 </head>
 <body class="gradient-custom">
+<script th:if="${error}">
+    alert('[[${error}]]');
+</script>
 <section class="d-flex vh-100">
     <div class="container-fluid row justify-content-center align-content-center">
         <div class="card bg-dark" style="border-radius: 1rem;">
