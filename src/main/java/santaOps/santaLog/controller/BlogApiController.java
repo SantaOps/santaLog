@@ -7,8 +7,10 @@ import org.springframework.web.bind.annotation.*;
 import santaOps.santaLog.domain.Article;
 import santaOps.santaLog.dto.AddArticleRequest;
 import santaOps.santaLog.dto.ArticleResponse;
+import santaOps.santaLog.dto.UpdateArticleRequest;
 import santaOps.santaLog.service.BlogService;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -21,13 +23,9 @@ public class BlogApiController {
     private final BlogService blogService;
 
     @PostMapping("articles")
-    public ResponseEntity<Article> addArticle(@RequestBody Article request){
-        Article savedArticle = request;
-        if (savedArticle.getCreatedAt()==null){
-           savedArticle.setCreatedAt(LocalDateTime.now());
-            savedArticle.setUpdateAt(LocalDateTime.now());
-        }
-         blogService.save(savedArticle);
+    public ResponseEntity<Article> addArticle(@RequestBody AddArticleRequest request, Principal principal){
+
+        Article savedArticle = blogService.save(request,principal.getName());
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(savedArticle);
@@ -56,10 +54,12 @@ public class BlogApiController {
     }
 
     @PutMapping("articles/{id}")
-    public ResponseEntity<Article> updateArticle (@PathVariable long id, @RequestBody Article request){
-        Article updateArticle = blogService.update(id, request);
-        return ResponseEntity.ok().body(updateArticle);
-    }
+    public ResponseEntity<Article> updateArticle(@PathVariable long id,
+                                                 @RequestBody UpdateArticleRequest request) {
+        Article updatedArticle = blogService.update(id, request);
 
+        return ResponseEntity.ok()
+                .body(updatedArticle);
+    }
 
 }

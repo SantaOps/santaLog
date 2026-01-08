@@ -14,68 +14,77 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-@Table(name="users")
-@NoArgsConstructor(access= AccessLevel.PROTECTED)
+@Table(name = "users")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
 public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="id", updatable=false)
+    @Column(name = "id", updatable = false)
     private Long id;
 
-    @Column(name="email",nullable=false, unique = true)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name="password")
+    @Column(name = "nickname", unique = true)
+    private String nickname;
+
+    @Column(name = "password")
     private String password;
 
     @Builder
-    public User(String email, String password, String auth){
+    public User(String email, String password, String nickname) {
         this.email = email;
         this.password = password;
+        this.nickname = nickname;
+    }
+
+    public User update(String nickname) {
+        this.nickname = nickname;
+        return this;
     }
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities(){
+    public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("user"));
     }
 
     // 사용자 id 반환
     @Override
-    public String getUsername(){
+    public String getUsername() {
         return email;
     }
 
     // 사용자 pw 반환
     @Override
-    public String getPassword(){
+    public String getPassword() {
         return password;
     }
 
     //계정 만료 여부 true->만료X
     @Override
-    public boolean isAccountNonExpired(){
+    public boolean isAccountNonExpired() {
         return true;
     }
 
 
     //계정 잠금 여부 true->잠금X
     @Override
-    public boolean isAccountNonLocked(){
+    public boolean isAccountNonLocked() {
         return true;
     }
 
     // 패스워드 만료 여부 true -> 만료X
     @Override
-    public boolean isCredentialsNonExpired(){
+    public boolean isCredentialsNonExpired() {
         return true;
     }
 
     //계정 사용 여부
     @Override
-    public boolean isEnabled(){
+    public boolean isEnabled() {
         return true;
     }
 

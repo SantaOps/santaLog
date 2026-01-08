@@ -13,23 +13,29 @@ import santaOps.santaLog.repository.UserRepository;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     public Long save(AddUserRequest dto) {
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         try {
+
             return userRepository.save(
                     User.builder()
                             .email(dto.getEmail())
-                            .password(bCryptPasswordEncoder.encode(dto.getPassword()))
-                            .build()
-            ).getId();
+                            .password(encoder.encode(dto.getPassword()))
+                            .build()).getId();
+
         } catch (DataIntegrityViolationException e) {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
     }
 
-    public User findById(Long userId){
-        return userRepository.findById(userId).orElseThrow(()->new IllegalArgumentException("Unexpected user"));
+    public User findById(Long userId) {
+        return userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("Unexpected user"));
+    }
+
+    public User findByEmail(String email){
+        return userRepository.findByEmail(email)
+                .orElseThrow(()->new IllegalArgumentException("Unexpected user"));
     }
 
 }
