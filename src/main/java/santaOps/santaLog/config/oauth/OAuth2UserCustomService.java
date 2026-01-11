@@ -36,6 +36,7 @@ public class OAuth2UserCustomService extends DefaultOAuth2UserService {
                 .orElse(User.builder()
                         .email(email)
                         .nickname(name)
+                        .password("SOCIAL_LOGIN")
                         .role(Role.USER)
                         .build());
         return userRepository.save(user);
