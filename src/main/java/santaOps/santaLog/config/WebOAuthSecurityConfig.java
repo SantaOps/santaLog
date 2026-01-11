@@ -28,40 +28,43 @@ public class WebOAuthSecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf().disable()
+
+        http
+                // H2 콘솔 때문에 반드시 필요
+                .csrf(csrf -> csrf.disable())
+                .headers(headers ->
+                        headers.frameOptions(frame -> frame.disable())
+                );
+
+        http
                 .httpBasic().disable()
                 .formLogin().disable()
                 .logout().disable();
 
-        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        http.addFilterBefore(tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+        http
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
-        http.authorizeRequests()
-                .requestMatchers("/api/token").permitAll()
-                // 관리자 로그인 페이지
-                .requestMatchers("/admin/login").permitAll()
-                // 관리자 API
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/**").authenticated()
-                .anyRequest().permitAll();
+        http
+                .addFilterBefore(
+                        tokenAuthenticationFilter(),
+                        UsernamePasswordAuthenticationFilter.class
+                );
 
-        http.oauth2Login()
-                .loginPage("/login")
-                .authorizationEndpoint()
-                .authorizationRequestRepository(oAuth2AuthorizationRequestBasedOnCookieRepository())
-                .and()
-                .successHandler(oAuth2SuccessHandler())
-                .userInfoEndpoint()
-                .userService(oAuth2UserCustomService);
-
-        http.logout().logoutSuccessUrl("/login");
-
-        http.exceptionHandling().defaultAuthenticationEntryPointFor(
-                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED), new AntPathRequestMatcher("/api/**"));
+        http
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/auth/admin/login").permitAll()
+                        .requestMatchers("/admin/login").permitAll()
+                        .requestMatchers("/admin/api/**").hasRole("ADMIN")
+                        .requestMatchers("/api/**").authenticated()
+                        .anyRequest().permitAll()
+                );
 
         return http.build();
-
     }
+
+
 
     @Bean
     public OAuth2SuccessHandler oAuth2SuccessHandler(){

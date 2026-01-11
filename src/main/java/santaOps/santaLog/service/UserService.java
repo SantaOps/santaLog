@@ -2,18 +2,24 @@ package santaOps.santaLog.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import santaOps.santaLog.config.jwt.TokenProvider;
 import santaOps.santaLog.domain.Role;
 import santaOps.santaLog.domain.User;
 import santaOps.santaLog.dto.AddUserRequest;
+import santaOps.santaLog.dto.AdminLoginRequest;
 import santaOps.santaLog.repository.UserRepository;
+
+import java.time.Duration;
 
 @RequiredArgsConstructor
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
+    private final TokenProvider tokenProvider;
 
     public Long save(AddUserRequest dto) {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
@@ -43,12 +49,31 @@ public class UserService {
 
     private final BCryptPasswordEncoder passwordEncoder;
 
-    public User authenticate(String email, String rawPassword) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+    public String adminLogin(AdminLoginRequest request) {
 
-        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 올바르지 않습니다.");
+        User admin = authenticate(
+                request.getEmail(),
+                request.getPassword()
+        );
+
+        if (admin.getRole() != Role.ADMIN) {
+            throw new AccessDeniedException("관리자 권한이 없습니다.");
+        }
+
+        return tokenProvider.generateToken(
+                admin,
+                Duration.ofHours(2)
+        );
+    }
+
+    public User authenticate(String email, String password) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("ID_NOT_FOUND"));
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new IllegalArgumentException("PW_NOT_MATCH");
         }
 
         return user;

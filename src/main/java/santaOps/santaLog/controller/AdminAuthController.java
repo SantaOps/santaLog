@@ -1,43 +1,45 @@
 package santaOps.santaLog.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import santaOps.santaLog.config.jwt.TokenProvider;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
 import santaOps.santaLog.domain.Role;
 import santaOps.santaLog.domain.User;
-import santaOps.santaLog.dto.AdminLoginRequest;
-import santaOps.santaLog.dto.AdminTokenResponse;
 import santaOps.santaLog.service.UserService;
-import java.time.Duration;
-@RestController
+@Controller
 @RequiredArgsConstructor
 @RequestMapping("/auth/admin")
 public class AdminAuthController {
 
     private final UserService userService;
-    private final TokenProvider tokenProvider;
 
     @PostMapping("/login")
-    public ResponseEntity<?> adminLogin(@RequestBody AdminLoginRequest request) {
+    public String adminLogin(
+            @RequestParam String email,
+            @RequestParam String password
+    ) {
+        try {
+            User admin = userService.authenticate(email, password);
 
-        User admin = userService.authenticate(
-                request.getEmail(),
-                request.getPassword()
-        );
+            if (admin.getRole() != Role.ADMIN) {
+                return "redirect:/admin/login?error=not_admin";
+            }
 
-        if (admin.getRole() != Role.ADMIN) {
-            throw new AccessDeniedException("관리자 권한이 없습니다.");
+            return "redirect:/articles";
+
+        } catch (IllegalArgumentException e) {
+
+            if ("ID_NOT_FOUND".equals(e.getMessage())) {
+                return "redirect:/admin/login?error=id";
+            }
+
+            if ("PW_NOT_MATCH".equals(e.getMessage())) {
+                return "redirect:/admin/login?error=pw";
+            }
+
+            return "redirect:/admin/login?error=unknown";
         }
-
-        String accessToken = tokenProvider.generateToken(admin, Duration.ofHours(2));
-
-        return ResponseEntity.ok(
-                new AdminTokenResponse(accessToken)
-        );
     }
+
 }

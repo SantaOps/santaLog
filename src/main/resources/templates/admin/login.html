@@ -28,6 +28,21 @@
                     관리자 전용 페이지입니다
                 </p>
 
+                <!-- 에러 메시지 -->
+                <div th:if="${param.error}">
+                    <div class="alert alert-danger text-center" role="alert">
+                        <span th:if="${param.error[0] == 'id'}">
+                            아이디를 다시 확인해주세요.
+                        </span>
+                                        <span th:if="${param.error[0] == 'pw'}">
+                            비밀번호를 다시 확인해주세요.
+                        </span>
+                                        <span th:if="${param.error[0] == 'not_admin'}">
+                            관리자 계정이 아닙니다.
+                        </span>
+                    </div>
+                </div>
+
                 <form action="/auth/admin/login" method="post">
                     <!-- CSRF -->
                     <input type="hidden"
@@ -42,8 +57,8 @@
                         <span class="text-white mr-2"></span>
                         <input type="email"
                                class="form-control"
-                               name="username"
-                               placeholder="admin_id"
+                               name="email"
+                               placeholder="admin@santa.com"
                                required>
                     </div>
 
