@@ -31,10 +31,16 @@ public class Article {
 
     @LastModifiedDate
     @Column(name="updated_at")
-    private LocalDateTime updateAt;
+    private LocalDateTime updatedAt;
 
     @Column(name="author", nullable = false)
     private String author;
+
+    @PrePersist
+    public void prePersist() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
 
     @Builder
     public Article(String author, String title, String content){

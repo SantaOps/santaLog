@@ -34,11 +34,16 @@ public class User implements UserDetails {
     @Column(name = "password")
     private String password;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
     @Builder
-    public User(String email, String password, String nickname) {
+    public User(String email, String password, String nickname, Role role) {
         this.email = email;
         this.password = password;
         this.nickname = nickname;
+        this.role = role;
     }
 
     public User update(String nickname) {
@@ -48,7 +53,9 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("user"));
+        return List.of(
+                new SimpleGrantedAuthority("ROLE_" + role.name())
+        );
     }
 
     // 사용자 id 반환

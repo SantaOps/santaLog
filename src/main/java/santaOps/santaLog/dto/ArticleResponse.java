@@ -17,7 +17,7 @@ public class ArticleResponse {
         this.title = article.getTitle();
         this.content = article.getContent();
         this.createdAt = article.getCreatedAt();
-        this.updatedAt = article.getUpdateAt();
+        this.updatedAt = article.getUpdatedAt();
 
     }
 

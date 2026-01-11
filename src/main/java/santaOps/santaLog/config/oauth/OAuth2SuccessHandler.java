@@ -22,6 +22,7 @@ import java.time.Duration;
 @Component
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     public static final String REFRESH_TOKEN_COOKIE_NAME = "refresh_token";
+    public static final String ACCESS_TOKEN_COOKIE_NAME = "ACCESS_TOKEN";
     public static final Duration REFRESH_TOKEN_DURATION = Duration.ofDays(14);
     public static final Duration ACCESS_TOKEN_DURATION = Duration.ofDays(1);
     public static final String REDIRECT_PATH = "/articles";
@@ -32,43 +33,56 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final UserService userService;
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)throws IOException{
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         User user = userService.findByEmail((String) oAuth2User.getAttributes().get("email"));
 
+        // 1. 리프레시 토큰 생성 및 저장 -> 쿠키에 저장
         String refreshToken = tokenProvider.generateToken(user, REFRESH_TOKEN_DURATION);
-        saveRefreshToken(user.getId(),refreshToken);
+        saveRefreshToken(user.getId(), refreshToken);
         addRefreshTokenToCookie(request, response, refreshToken);
 
-        String accessToken = tokenProvider.generateToken(user,ACCESS_TOKEN_DURATION);
-        String targetUrl = getTargetUrl(accessToken);
+        // 2. 액세스 토큰 생성 -> URL 파라미터가 아니라 쿠키에 저장
+        String accessToken = tokenProvider.generateToken(user, ACCESS_TOKEN_DURATION);
+        addAccessTokenToCookie(response, accessToken);
+
+        // 3. 토큰은 쿠키에 담았으니, URL은  /articles 로만 설정
+        String targetUrl = getTargetUrl();
+
         clearAuthenticationAttributes(request, response);
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 
-    private void saveRefreshToken(Long userId, String newRefreshToken){
+    private void saveRefreshToken(Long userId, String newRefreshToken) {
         RefreshToken refreshToken = refreshTokenRepository.findByUserId(userId)
                 .map(entity -> entity.update(newRefreshToken))
                 .orElse(new RefreshToken(userId, newRefreshToken));
 
         refreshTokenRepository.save(refreshToken);
     }
-    private void addRefreshTokenToCookie(HttpServletRequest request, HttpServletResponse response, String refreshToken){
+
+    private void addRefreshTokenToCookie(HttpServletRequest request, HttpServletResponse response, String refreshToken) {
         int cookieMaxAge = (int) REFRESH_TOKEN_DURATION.toSeconds();
-        CookieUtil.deleteCookie(request,response,REFRESH_TOKEN_COOKIE_NAME);
-        CookieUtil.addCookie(response, REFRESH_TOKEN_COOKIE_NAME,refreshToken,cookieMaxAge);
+        CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME);
+        CookieUtil.addCookie(response, REFRESH_TOKEN_COOKIE_NAME, refreshToken, cookieMaxAge);
     }
 
-    private void clearAuthenticationAttributes(HttpServletRequest request, HttpServletResponse response){
+    // 액세스 토큰을 쿠키에 굽는 메서드
+    private void addAccessTokenToCookie(HttpServletResponse response, String accessToken) {
+        int cookieMaxAge = (int) ACCESS_TOKEN_DURATION.toSeconds();
+        // 이미 util에 있는 메서드 활용 (ACCESS_TOKEN 이름으로 저장)
+        CookieUtil.addCookie(response, ACCESS_TOKEN_COOKIE_NAME, accessToken, cookieMaxAge);
+    }
+
+    private void clearAuthenticationAttributes(HttpServletRequest request, HttpServletResponse response) {
         super.clearAuthenticationAttributes(request);
         authorizationRequestRepository.removeAuthorizationRequestCookies(request, response);
     }
 
-    private String getTargetUrl(String token){
+    // URL에서 토큰 파라미터 제거
+    private String getTargetUrl() {
         return UriComponentsBuilder.fromUriString(REDIRECT_PATH)
-                .queryParam("token",token)
                 .build()
                 .toUriString();
     }
-
 }

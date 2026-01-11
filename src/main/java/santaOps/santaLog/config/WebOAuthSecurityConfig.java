@@ -3,14 +3,10 @@ package santaOps.santaLog.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import santaOps.santaLog.config.jwt.TokenProvider;
 import santaOps.santaLog.config.oauth.OAuth2AuthorizationRequestBasedOnCookieRepository;
 import santaOps.santaLog.config.oauth.OAuth2SuccessHandler;
@@ -29,55 +25,68 @@ public class WebOAuthSecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf().disable()
+
+        http
+                .csrf(csrf -> csrf.disable())
+                .headers(headers ->
+                        headers.frameOptions(frame -> frame.disable())
+                );
+
+        http
                 .httpBasic().disable()
                 .formLogin().disable()
                 .logout().disable();
 
-        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        http.addFilterBefore(tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+        http
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
-        http.authorizeRequests()
-                .requestMatchers("/api/token").permitAll()
-                .requestMatchers("/api/**").authenticated()
-                .anyRequest().permitAll();
+        http
+                .addFilterBefore(
+                        tokenAuthenticationFilter(),
+                        UsernamePasswordAuthenticationFilter.class
+                );
 
-        http.oauth2Login()
+        http
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/auth/admin/login").permitAll()
+                        .requestMatchers("/admin/login").permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/**").authenticated()
+                        .anyRequest().permitAll()
+                );
+
+        http.oauth2Login(oauth2 -> oauth2
                 .loginPage("/login")
-                .authorizationEndpoint()
-                .authorizationRequestRepository(oAuth2AuthorizationRequestBasedOnCookieRepository())
-                .and()
+                .authorizationEndpoint(authorization -> authorization
+                        .authorizationRequestRepository(oAuth2AuthorizationRequestBasedOnCookieRepository()))
                 .successHandler(oAuth2SuccessHandler())
-                .userInfoEndpoint()
-                .userService(oAuth2UserCustomService);
-
-        http.logout().logoutSuccessUrl("/login");
-
-        http.exceptionHandling().defaultAuthenticationEntryPointFor(
-                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED), new AntPathRequestMatcher("/api/**"));
+                .userInfoEndpoint(userInfo -> userInfo
+                        .userService(oAuth2UserCustomService))
+        );
 
         return http.build();
+    }
 
+
+    @Bean
+    public OAuth2SuccessHandler oAuth2SuccessHandler() {
+        return new OAuth2SuccessHandler(
+                tokenProvider,
+                refreshTokenRepository,
+                oAuth2AuthorizationRequestBasedOnCookieRepository(),
+                userService
+        );
     }
 
     @Bean
-    public OAuth2SuccessHandler oAuth2SuccessHandler(){
-        return new OAuth2SuccessHandler(tokenProvider, refreshTokenRepository, oAuth2AuthorizationRequestBasedOnCookieRepository(),userService);
-    }
-
-    @Bean
-    public TokenAuthenticationFilter tokenAuthenticationFilter(){
+    public TokenAuthenticationFilter tokenAuthenticationFilter() {
         return new TokenAuthenticationFilter(tokenProvider);
     }
 
     @Bean
-    public OAuth2AuthorizationRequestBasedOnCookieRepository oAuth2AuthorizationRequestBasedOnCookieRepository(){
+    public OAuth2AuthorizationRequestBasedOnCookieRepository oAuth2AuthorizationRequestBasedOnCookieRepository() {
         return new OAuth2AuthorizationRequestBasedOnCookieRepository();
     }
-
-    @Bean
-    public BCryptPasswordEncoder bCryptPasswordEncoder(){
-        return new BCryptPasswordEncoder();
-    }
-
 }

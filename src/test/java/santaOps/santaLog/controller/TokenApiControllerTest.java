@@ -15,6 +15,7 @@ import org.springframework.web.context.WebApplicationContext;
 import santaOps.santaLog.config.jwt.JwtFactory;
 import santaOps.santaLog.config.jwt.JwtProperties;
 import santaOps.santaLog.domain.RefreshToken;
+import santaOps.santaLog.domain.Role;
 import santaOps.santaLog.domain.User;
 import santaOps.santaLog.dto.CreateAccessTokenRequest;
 import santaOps.santaLog.repository.RefreshTokenRepository;
@@ -57,6 +58,7 @@ public class TokenApiControllerTest {
         User testUser = userRepository.save(User.builder()
                 .email("user@gmail.com")
                 .password("test")
+                .role(Role.USER)
                 .build());
 
         String refreshToken = JwtFactory.builder()
