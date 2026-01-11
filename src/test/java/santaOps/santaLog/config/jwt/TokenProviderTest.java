@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import santaOps.santaLog.domain.Role;
 import santaOps.santaLog.domain.User;
 import santaOps.santaLog.repository.UserRepository;
 
@@ -31,6 +32,7 @@ public class TokenProviderTest {
         User testUser = userRepository.save(User.builder()
                 .email("user@gmail.com")
                 .password("test")
+                .role(Role.USER)
                 .build());
 
 

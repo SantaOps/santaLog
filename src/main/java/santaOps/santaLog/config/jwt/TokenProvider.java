@@ -33,39 +33,50 @@ public class TokenProvider {
                 .setExpiration(expiry)
                 .setSubject(user.getEmail())
                 .claim("id", user.getId())
+                .claim("role", user.getRole().name())
                 .signWith(SignatureAlgorithm.HS256, jwtProperties.getSecretKey())
                 .compact();
     }
 
-    //토큰 유효성 검증
-    public boolean validToken(String token){
-        try{
+    // 토큰 유효성 검증
+    public boolean validToken(String token) {
+        try {
             Jwts.parser()
                     .setSigningKey(jwtProperties.getSecretKey())
                     .parseClaimsJws(token);
             return true;
-        }catch(Exception e){
-            // 유효하지 않은 토큰
+        } catch (Exception e) {
             return false;
         }
     }
 
-    // 토큰 기반 인증정보 가져오기
-    public Authentication getAuthentication(String token){
+    // 토큰 기반 인증 정보 생성
+    public Authentication getAuthentication(String token) {
         Claims claims = getClaims(token);
-        Set< SimpleGrantedAuthority> authorities = Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"));
 
-        return new UsernamePasswordAuthenticationToken(new org.springframework.security.core.userdetails.User(claims.getSubject(), "",authorities),token,authorities);
+        String role = claims.get("role", String.class);
 
+        Set<SimpleGrantedAuthority> authorities =
+                Collections.singleton(new SimpleGrantedAuthority("ROLE_" + role));
+
+        return new UsernamePasswordAuthenticationToken(
+                new org.springframework.security.core.userdetails.User(
+                        claims.getSubject(),
+                        "",
+                        authorities
+                ),
+                token,
+                authorities
+        );
     }
 
-    //토큰 기반 유저ID가져오기
-    public Long getUserId(String token){
+    // 토큰 기반 유저 ID 조회
+    public Long getUserId(String token) {
         Claims claims = getClaims(token);
-        return claims.get("id",Long.class);
+        return claims.get("id", Long.class);
     }
 
-    private Claims getClaims(String token){
+    private Claims getClaims(String token) {
         return Jwts.parser()
                 .setSigningKey(jwtProperties.getSecretKey())
                 .parseClaimsJws(token)
