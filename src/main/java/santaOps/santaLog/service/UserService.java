@@ -1,6 +1,7 @@
 package santaOps.santaLog.service;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -14,21 +15,30 @@ import santaOps.santaLog.repository.UserRepository;
 
 import java.time.Duration;
 
-@RequiredArgsConstructor
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
-    private final TokenProvider tokenProvider;
+    private final BCryptPasswordEncoder passwordEncoder;
+
+    private TokenProvider tokenProvider;
+
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @Autowired
+    public void setTokenProvider(@Lazy TokenProvider tokenProvider) {
+        this.tokenProvider = tokenProvider;
+    }
 
     public Long save(AddUserRequest dto) {
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         try {
-
             return userRepository.save(
                     User.builder()
                             .email(dto.getEmail())
-                            .password(encoder.encode(dto.getPassword()))
+                            .password(passwordEncoder.encode(dto.getPassword()))
                             .role(Role.USER)
                             .build()).getId();
 
@@ -38,7 +48,8 @@ public class UserService {
     }
 
     public User findById(Long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("Unexpected user"));
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Unexpected user"));
     }
 
     public User findByEmail(String email){
@@ -46,11 +57,7 @@ public class UserService {
                 .orElseThrow(()->new IllegalArgumentException("Unexpected user"));
     }
 
-
-    private final BCryptPasswordEncoder passwordEncoder;
-
     public String adminLogin(AdminLoginRequest request) {
-
         User admin = authenticate(
                 request.getEmail(),
                 request.getPassword()
@@ -67,10 +74,8 @@ public class UserService {
     }
 
     public User authenticate(String email, String password) {
-
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("ID_NOT_FOUND"));
+                .orElseThrow(() -> new IllegalArgumentException("ID_NOT_FOUND"));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new IllegalArgumentException("PW_NOT_MATCH");
@@ -78,5 +83,4 @@ public class UserService {
 
         return user;
     }
-
 }

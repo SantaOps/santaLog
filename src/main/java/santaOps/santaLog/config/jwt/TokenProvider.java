@@ -1,23 +1,32 @@
 package santaOps.santaLog.config.jwt;
 
-import lombok.RequiredArgsConstructor;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Header;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import santaOps.santaLog.domain.User;
-import io.jsonwebtoken.*;
-import java.time.Duration;
+import santaOps.santaLog.service.UserService;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
 
-@RequiredArgsConstructor
 @Service
 public class TokenProvider {
 
     private final JwtProperties jwtProperties;
+    private final UserService userService;
+
+    public TokenProvider(JwtProperties jwtProperties, @Lazy UserService userService) {
+        this.jwtProperties = jwtProperties;
+        this.userService = userService;
+    }
 
     public String generateToken(User user, Duration expiredAt) {
         Date now = new Date();
@@ -38,7 +47,6 @@ public class TokenProvider {
                 .compact();
     }
 
-    // 토큰 유효성 검증
     public boolean validToken(String token) {
         try {
             Jwts.parser()
@@ -50,27 +58,22 @@ public class TokenProvider {
         }
     }
 
-    // 토큰 기반 인증 정보 생성
     public Authentication getAuthentication(String token) {
         Claims claims = getClaims(token);
 
-        String role = claims.get("role", String.class);
+        String email = claims.getSubject();
+        User user = userService.findByEmail(email);
 
         Set<SimpleGrantedAuthority> authorities =
-                Collections.singleton(new SimpleGrantedAuthority("ROLE_" + role));
+                Collections.singleton(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
 
         return new UsernamePasswordAuthenticationToken(
-                new org.springframework.security.core.userdetails.User(
-                        claims.getSubject(),
-                        "",
-                        authorities
-                ),
+                user,
                 token,
                 authorities
         );
     }
 
-    // 토큰 기반 유저 ID 조회
     public Long getUserId(String token) {
         Claims claims = getClaims(token);
         return claims.get("id", Long.class);
@@ -82,6 +85,4 @@ public class TokenProvider {
                 .parseClaimsJws(token)
                 .getBody();
     }
-
-
 }

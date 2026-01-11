@@ -3,13 +3,10 @@ package santaOps.santaLog.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import santaOps.santaLog.config.jwt.TokenProvider;
 import santaOps.santaLog.config.oauth.OAuth2AuthorizationRequestBasedOnCookieRepository;
 import santaOps.santaLog.config.oauth.OAuth2SuccessHandler;
@@ -30,7 +27,6 @@ public class WebOAuthSecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-                // H2 콘솔 때문에 반드시 필요
                 .csrf(csrf -> csrf.disable())
                 .headers(headers ->
                         headers.frameOptions(frame -> frame.disable())
@@ -56,29 +52,41 @@ public class WebOAuthSecurityConfig {
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/auth/admin/login").permitAll()
                         .requestMatchers("/admin/login").permitAll()
-                        .requestMatchers("/admin/api/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll()
                 );
+
+        http.oauth2Login(oauth2 -> oauth2
+                .loginPage("/login")
+                .authorizationEndpoint(authorization -> authorization
+                        .authorizationRequestRepository(oAuth2AuthorizationRequestBasedOnCookieRepository()))
+                .successHandler(oAuth2SuccessHandler())
+                .userInfoEndpoint(userInfo -> userInfo
+                        .userService(oAuth2UserCustomService))
+        );
 
         return http.build();
     }
 
 
-
     @Bean
-    public OAuth2SuccessHandler oAuth2SuccessHandler(){
-        return new OAuth2SuccessHandler(tokenProvider, refreshTokenRepository, oAuth2AuthorizationRequestBasedOnCookieRepository(),userService);
+    public OAuth2SuccessHandler oAuth2SuccessHandler() {
+        return new OAuth2SuccessHandler(
+                tokenProvider,
+                refreshTokenRepository,
+                oAuth2AuthorizationRequestBasedOnCookieRepository(),
+                userService
+        );
     }
 
     @Bean
-    public TokenAuthenticationFilter tokenAuthenticationFilter(){
+    public TokenAuthenticationFilter tokenAuthenticationFilter() {
         return new TokenAuthenticationFilter(tokenProvider);
     }
 
     @Bean
-    public OAuth2AuthorizationRequestBasedOnCookieRepository oAuth2AuthorizationRequestBasedOnCookieRepository(){
+    public OAuth2AuthorizationRequestBasedOnCookieRepository oAuth2AuthorizationRequestBasedOnCookieRepository() {
         return new OAuth2AuthorizationRequestBasedOnCookieRepository();
     }
-
 }

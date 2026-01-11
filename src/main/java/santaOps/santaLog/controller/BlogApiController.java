@@ -23,12 +23,17 @@ public class BlogApiController {
     private final BlogService blogService;
 
     @PostMapping("articles")
-    public ResponseEntity<Article> addArticle(@RequestBody AddArticleRequest request, Principal principal){
+    public ResponseEntity<Article> addArticle(@RequestBody AddArticleRequest request, Principal principal) {
 
-        Article savedArticle = blogService.save(request,principal.getName());
+        // principal이 null이면 로그인이 안 된 것 (필터가 막거나, 토큰이 없거나)
+        if (principal == null) {
+            throw new RuntimeException("로그인 정보가 없습니다.");
+        }
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(savedArticle);
+        String email = principal.getName();
+
+        Article savedArticle = blogService.save(request, email);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedArticle);
     }
 
     @GetMapping("articles")
