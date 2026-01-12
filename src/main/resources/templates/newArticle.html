@@ -13,7 +13,10 @@
             <img src="/img/logo.png" alt="SantaLog Logo" style="max-height: 80px; width: auto;">
         </a>
         <div>
-            <h1 class="mb-1 font-weight-bold">SantaLog</h1>
+            <h1 class="mb-1 font-weight-bold">
+                SantaLog
+                <span sec:authorize="hasRole('ADMIN')" style="font-size: 0.6em; ">- 관리자 페이지</span>
+            </h1>
             <h4 class="mb-0 text-muted">SantaLog에 오신 것을 환영합니다.</h4>
         </div>
     </div>
