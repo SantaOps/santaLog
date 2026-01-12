@@ -23,7 +23,6 @@ import java.util.UUID;
 public class BlogApiController {
 
     private final BlogService blogService;
-    // [참고] 경로 구분자는 OS에 따라 다를 수 있으므로 File.separator 사용 권장하지만, 윈도우라면 그대로 둬도 무방합니다.
     private static final String UPLOAD_DIR = "C:/Users/dnjft/SpringProject/santaLog-dev/src/main/resources/static/img/";
 
     /**
@@ -41,15 +40,18 @@ public class BlogApiController {
         if (principal == null) {
             throw new RuntimeException("로그인 정보가 없습니다.");
         }
-
+        if (title == null || title.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build(); // title에 아무런 값이 없는 경우
+        }
         String fileName = null;
         if (image != null && !image.isEmpty()) {
             fileName = saveImage(image);
         }
 
         boolean isNoticeValue = (isNotice != null) && isNotice;
+        boolean isWarnValue = (isNotice != null) && isNotice;
 
-        AddArticleRequest request = new AddArticleRequest(title, content, fileName, isNoticeValue);
+        AddArticleRequest request = new AddArticleRequest(title, content, fileName, isNoticeValue, false);
 
         String email = principal.getName();
 
@@ -107,10 +109,12 @@ public class BlogApiController {
         // null 체크
         boolean isNoticeValue = (isNotice != null) && isNotice;
 
-        // [수정] DTO 생성자 인자 개수 맞춤 (5개)
-        // 마지막 인자(isWarned)에 null을 전달하여 "경고 상태는 변경 없음"을 의미함
-        UpdateArticleRequest request = new UpdateArticleRequest(title, content, fileName, isNoticeValue, null);
+        Article currentArticle = blogService.findById(id);
+        boolean isWarnedValue = currentArticle.getIsWarned();
 
+
+        // 마지막 인자(isWarned)에 null을 전달하여 "경고 상태는 변경 없음"을 의미함
+        UpdateArticleRequest request = new UpdateArticleRequest(title, content, fileName, isNoticeValue, isWarnedValue);
         Article updatedArticle = blogService.update(id, request);
 
         return ResponseEntity.ok().body(updatedArticle);

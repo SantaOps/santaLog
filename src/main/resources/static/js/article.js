@@ -1,4 +1,44 @@
-// 삭제 기능
+
+function validateAndGetFormData() {
+    const titleInput = document.getElementById('title');
+    const contentInput = document.getElementById('content');
+    const fileInput = document.getElementById('file-input');
+    const isNoticeCheckbox = document.getElementById('is-notice');
+
+    const titleValue = titleInput.value;
+    const contentValue = contentInput.value;
+
+    // 1. 제목 검사
+    if (!titleValue || titleValue.trim() === "") {
+        alert("제목을 입력해주세요.");
+        titleInput.focus();
+        return null;
+    }
+
+    // 2. 본문 검사
+    if (!contentValue || contentValue.trim() === "") {
+        alert("본문 내용을 입력해주세요.");
+        contentInput.focus();
+        return null;
+    }
+
+    let formData = new FormData();
+    formData.append('title', titleValue);
+    formData.append('content', contentValue);
+
+    const isNotice = isNoticeCheckbox ? isNoticeCheckbox.checked : false;
+    formData.append('isNotice', isNotice);
+
+    // 파일이 선택되었을 때만 추가
+    if (fileInput && fileInput.files[0]) {
+        formData.append('image', fileInput.files[0]);
+    }
+
+    return formData;
+}
+
+
+// 삭제
 const deleteButton = document.getElementById('delete-btn');
 
 if (deleteButton) {
@@ -19,7 +59,8 @@ if (deleteButton) {
     });
 }
 
-// 수정 기능
+
+// 수정
 const modifyButton = document.getElementById('modify-btn');
 
 if (modifyButton) {
@@ -28,22 +69,8 @@ if (modifyButton) {
         let params = new URLSearchParams(location.search);
         let id = params.get('id');
 
-        // [수정] JSON 대신 FormData 사용
-        let formData = new FormData();
-        formData.append('title', document.getElementById('title').value);
-        formData.append('content', document.getElementById('content').value);
-
-        const isNoticeCheckbox = document.getElementById('is-notice');
-        // 관리자가 아니라서 체크박스가 없을 수도 있으므로 null 체크
-        const isNotice = isNoticeCheckbox ? isNoticeCheckbox.checked : false;
-
-        formData.append('isNotice', isNotice);
-
-        // 파일이 선택되었을 때만 추가
-        const fileInput = document.getElementById('file-input');
-        if (fileInput && fileInput.files[0]) {
-            formData.append('image', fileInput.files[0]);
-        }
+        const formData = validateAndGetFormData();
+        if (!formData) return;
 
         function success() {
             alert('수정 완료되었습니다.');
@@ -55,47 +82,33 @@ if (modifyButton) {
             location.replace(`/articles/${id}`);
         }
 
-        // FormData 객체를 그대로 넘김 (JSON.stringify 안함)
         httpRequest('PUT', `/api/articles/${id}`, formData, success, fail);
     });
 }
 
-// 생성 기능
+
+// 생성
 const createButton = document.getElementById('create-btn');
 
 if (createButton) {
     createButton.addEventListener('click', event => {
-        // [수정] JSON 대신 FormData 사용
-        let formData = new FormData();
-        formData.append('title', document.getElementById('title').value);
-        formData.append('content', document.getElementById('content').value);
 
-
-        const isNoticeCheckbox = document.getElementById('is-notice');
-        // 관리자가 아니라서 체크박스가 없을 수도 있으므로 null 체크
-        const isNotice = isNoticeCheckbox ? isNoticeCheckbox.checked : false;
-
-        formData.append('isNotice', isNotice);
-
-        // 파일 추가
-        const fileInput = document.getElementById('file-input');
-        if (fileInput && fileInput.files[0]) {
-            formData.append('image', fileInput.files[0]);
-        }
+        const formData = validateAndGetFormData();
+        if (!formData) return;
 
         function success() {
             alert('등록 완료되었습니다.');
             location.replace('/articles');
-        };
+        }
+
         function fail() {
             alert('등록 실패했습니다.');
             location.replace('/articles');
-        };
+        }
 
         httpRequest('POST', '/api/articles', formData, success, fail);
     });
 }
-
 
 // 쿠키를 가져오는 함수
 function getCookie(key) {
@@ -112,7 +125,7 @@ function getCookie(key) {
     return result;
 }
 
-// HTTP 요청을 보내는 함수 (핵심 수정 부분)
+// HTTP 요청을 보내는 함수
 function httpRequest(method, url, body, success, fail) {
     // 헤더 설정
     const headers = {};
@@ -121,6 +134,7 @@ function httpRequest(method, url, body, success, fail) {
     if (accessToken) {
         headers['Authorization'] = 'Bearer ' + accessToken;
     }
+    // FormData가 아닐 때만 Content-Type을 application/json으로 설정
     if (!(body instanceof FormData)) {
         headers['Content-Type'] = 'application/json';
     }
