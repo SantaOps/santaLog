@@ -10,11 +10,15 @@ public class ArticleResponse {
     private final String title;
     private final String content;
     private final String thumbnailUrl;
+    private final boolean isNotice;
+    private final boolean isWarned;
 
     public ArticleResponse(Article article) {
         this.id = article.getId();
         this.title = article.getTitle();
         this.content = article.getContent();
         this.thumbnailUrl = article.getThumbnailUrl();
+        this.isNotice = article.getIsNotice();
+        this.isWarned = article.getIsWarned();
     }
 }

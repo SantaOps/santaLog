@@ -7,11 +7,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import santaOps.santaLog.domain.Article;
-import santaOps.santaLog.dto.ArticleListViewResponse;
+import santaOps.santaLog.dto.ArticleResponse;
 import santaOps.santaLog.dto.ArticleViewResponse;
 import santaOps.santaLog.service.BlogService;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Controller
@@ -20,11 +22,32 @@ public class BlogViewController {
     private final BlogService blogService;
 
     @GetMapping("/articles")
-    public String getArticles(Model model){
-        List<ArticleListViewResponse> articles = blogService.findAll().stream()
-                .map(ArticleListViewResponse::new)
+    public String getArticles(Model model) {
+        List<ArticleResponse> allArticles = blogService.findAll()
+                .stream()
+                .map(ArticleResponse::new)
                 .toList();
-        model.addAttribute("articles",articles);
+
+        // 1. 공지사항과 일반글 분리
+        List<ArticleResponse> notices = allArticles.stream()
+                .filter(ArticleResponse::isNotice) // 공지사항만 필터링
+                .collect(Collectors.toList());
+
+        List<ArticleResponse> regularArticles = allArticles.stream()
+                .filter(a -> !a.isNotice()) // 일반글만 필터링
+                .collect(Collectors.toList());
+
+        // 2. 공지사항을 3개씩 묶기 (Chunking)
+        List<List<ArticleResponse>> noticeChunks = new ArrayList<>();
+        int chunkSize = 3;
+        for (int i = 0; i < notices.size(); i += chunkSize) {
+            noticeChunks.add(notices.subList(i, Math.min(i + chunkSize, notices.size())));
+        }
+
+        // 3. 모델에 담기
+        model.addAttribute("noticeChunks", noticeChunks); // 3개씩 묶인 공지
+        model.addAttribute("articles", regularArticles);  // 나머지 일반 글
+
         return "articleList";
     }
 

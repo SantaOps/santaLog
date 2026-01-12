@@ -44,7 +44,7 @@ public class BlogService {
                 .orElseThrow(() -> new IllegalArgumentException("not found : " + id));
 
         authorizeArticleAuthor(article);
-        article.update(request.getTitle(), request.getContent(), request.getThumbnailUrl());
+        article.update(request.getTitle(), request.getContent(), request.getThumbnailUrl(),request.getIsNotice(),request.getIsWarned());
 
         return article;
     }
@@ -56,5 +56,18 @@ public class BlogService {
         }
     }
 
+    @Transactional
+    public void warnArticle(Long id) {
+        Article article = blogRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("글이 없습니다: " + id));
+        article.warn();
+    }
+
+    @Transactional // 트랜잭션 필수!
+    public void unWarnArticle(Long id) {
+        Article article = blogRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("not found: " + id));
+        article.unWarn(); // 엔티티의 메서드 호출
+    }
 
 }

@@ -37,6 +37,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 
+    implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+
 }
 
 test {
