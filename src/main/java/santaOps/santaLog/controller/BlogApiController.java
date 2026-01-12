@@ -4,31 +4,51 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import santaOps.santaLog.domain.Article;
 import santaOps.santaLog.dto.AddArticleRequest;
 import santaOps.santaLog.dto.ArticleResponse;
 import santaOps.santaLog.dto.UpdateArticleRequest;
 import santaOps.santaLog.service.BlogService;
 
+import java.io.File;
+import java.io.IOException;
 import java.security.Principal;
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/")
 public class BlogApiController {
-//TODO: 응답 형태 공통으로 묶기
 
     private final BlogService blogService;
 
-    @PostMapping("articles")
-    public ResponseEntity<Article> addArticle(@RequestBody AddArticleRequest request, Principal principal) {
+    private static final String UPLOAD_DIR = "C:/Users/dnjft/SpringProject/santaLog-dev/src/main/resources/static/img/";
 
-        // principal이 null이면 로그인이 안 된 것 (필터가 막거나, 토큰이 없거나)
+    /**
+     * 글 등록 (POST)
+     * FormData로 들어오므로 @RequestBody가 아닌 @RequestParam, @RequestPart 사용
+     */
+    @PostMapping("articles")
+    public ResponseEntity<Article> addArticle(
+            @RequestParam("title") String title,
+            @RequestParam("content") String content,
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            Principal principal
+    ) throws IOException {
+
         if (principal == null) {
             throw new RuntimeException("로그인 정보가 없습니다.");
         }
+
+        // 1. 이미지 파일 저장 및 파일명 추출
+        String fileName = null;
+        if (image != null && !image.isEmpty()) {
+            fileName = saveImage(image);
+        }
+
+        AddArticleRequest request = new AddArticleRequest(title, content, fileName);
 
         String email = principal.getName();
 
@@ -36,6 +56,9 @@ public class BlogApiController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedArticle);
     }
 
+    /**
+     * 글 목록 조회 (GET)
+     */
     @GetMapping("articles")
     public ResponseEntity<List<ArticleResponse>> findAllArticles(){
         List<ArticleResponse> articles = blogService.findAll()
@@ -46,25 +69,68 @@ public class BlogApiController {
         return ResponseEntity.ok().body(articles);
     }
 
+    /**
+     * 글 단건 조회 (GET)
+     */
     @GetMapping("articles/{id}")
     public ResponseEntity<ArticleResponse> findArticle(@PathVariable long id){
         Article article = blogService.findById(id);
         return ResponseEntity.ok().body(new ArticleResponse(article));
     }
 
+    /**
+     * 글 삭제 (DELETE)
+     */
     @DeleteMapping("articles/{id}")
     public ResponseEntity<Void> deleteArticle (@PathVariable long id){
         blogService.delete(id);
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * 글 수정 (PUT)
+     * FormData로 들어오므로 @RequestBody 제거
+     */
     @PutMapping("articles/{id}")
-    public ResponseEntity<Article> updateArticle(@PathVariable long id,
-                                                 @RequestBody UpdateArticleRequest request) {
+    public ResponseEntity<Article> updateArticle(
+            @PathVariable long id,
+            @RequestParam("title") String title,
+            @RequestParam("content") String content,
+            @RequestPart(value = "image", required = false) MultipartFile image
+    ) throws IOException {
+
+        String fileName = null;
+        if (image != null && !image.isEmpty()) {
+            fileName = saveImage(image);
+        }
+
+        UpdateArticleRequest request = new UpdateArticleRequest(title, content, fileName);
+
         Article updatedArticle = blogService.update(id, request);
 
-        return ResponseEntity.ok()
-                .body(updatedArticle);
+        return ResponseEntity.ok().body(updatedArticle);
     }
 
+    /**
+     * [내부 메서드] 실제 파일을 디스크에 저장하고 저장된 파일명을 반환
+     */
+    private String saveImage(MultipartFile image) throws IOException {
+        if (image.isEmpty()) return null;
+
+        // 폴더가 없으면 생성
+        File dir = new File(UPLOAD_DIR);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        // 파일명 중복 방지를 위한 UUID
+        String originalFilename = image.getOriginalFilename();
+        String storeFileName = UUID.randomUUID() + "_" + originalFilename;
+
+        // 파일 저장
+        File dest = new File(UPLOAD_DIR + storeFileName);
+        image.transferTo(dest);
+
+        return storeFileName;
+    }
 }

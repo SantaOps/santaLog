@@ -11,12 +11,14 @@ import santaOps.santaLog.domain.Article;
 public class AddArticleRequest {
     private String title;
     private String content;
+    private String thumbnailUrl;
 
     public Article toEntity(String author){
         return Article.builder()
                 .title(title)
                 .content(content)
                 .author(author)
+                .thumbnailUrl(thumbnailUrl)
                 .build();
     }
 }
