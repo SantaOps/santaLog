@@ -1,4 +1,6 @@
 spring:
+  thymeleaf:
+    cache: false
   security:
     oauth2:
       client:
@@ -26,3 +28,4 @@ spring:
 jwt:
   issuer: ajufresh@gmail.com
   secret_key: study-springboot
+

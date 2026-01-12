@@ -12,6 +12,7 @@ public class AddArticleRequest {
     private String title;
     private String content;
     private String thumbnailUrl;
+    private Boolean isNotice;
 
     public Article toEntity(String author){
         return Article.builder()
@@ -19,6 +20,7 @@ public class AddArticleRequest {
                 .content(content)
                 .author(author)
                 .thumbnailUrl(thumbnailUrl)
+                .isNotice(isNotice)
                 .build();
     }
 }

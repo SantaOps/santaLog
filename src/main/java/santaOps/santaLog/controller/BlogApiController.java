@@ -23,17 +23,16 @@ import java.util.UUID;
 public class BlogApiController {
 
     private final BlogService blogService;
-
     private static final String UPLOAD_DIR = "C:/Users/dnjft/SpringProject/santaLog-dev/src/main/resources/static/img/";
 
     /**
      * 글 등록 (POST)
-     * FormData로 들어오므로 @RequestBody가 아닌 @RequestParam, @RequestPart 사용
      */
     @PostMapping("articles")
     public ResponseEntity<Article> addArticle(
             @RequestParam("title") String title,
             @RequestParam("content") String content,
+            @RequestParam(value = "isNotice", required = false) Boolean isNotice, // 파라미터 받기
             @RequestPart(value = "image", required = false) MultipartFile image,
             Principal principal
     ) throws IOException {
@@ -42,13 +41,15 @@ public class BlogApiController {
             throw new RuntimeException("로그인 정보가 없습니다.");
         }
 
-        // 1. 이미지 파일 저장 및 파일명 추출
         String fileName = null;
         if (image != null && !image.isEmpty()) {
             fileName = saveImage(image);
         }
 
-        AddArticleRequest request = new AddArticleRequest(title, content, fileName);
+        // [수정] null 체크 후 boolean 변환 (체크 안하면 null로 올 수 있음 -> false로 처리)
+        boolean isNoticeValue = (isNotice != null) && isNotice;
+
+        AddArticleRequest request = new AddArticleRequest(title, content, fileName, isNoticeValue);
 
         String email = principal.getName();
 
@@ -65,7 +66,6 @@ public class BlogApiController {
                 .stream()
                 .map(ArticleResponse::new)
                 .toList();
-
         return ResponseEntity.ok().body(articles);
     }
 
@@ -89,13 +89,13 @@ public class BlogApiController {
 
     /**
      * 글 수정 (PUT)
-     * FormData로 들어오므로 @RequestBody 제거
      */
     @PutMapping("articles/{id}")
     public ResponseEntity<Article> updateArticle(
             @PathVariable long id,
             @RequestParam("title") String title,
             @RequestParam("content") String content,
+            @RequestParam(value = "isNotice", required = false) Boolean isNotice, // [추가] 수정 시에도 공지 여부 받기
             @RequestPart(value = "image", required = false) MultipartFile image
     ) throws IOException {
 
@@ -104,7 +104,10 @@ public class BlogApiController {
             fileName = saveImage(image);
         }
 
-        UpdateArticleRequest request = new UpdateArticleRequest(title, content, fileName);
+        // [수정] null 체크
+        boolean isNoticeValue = (isNotice != null) && isNotice;
+
+        UpdateArticleRequest request = new UpdateArticleRequest(title, content, fileName, isNoticeValue);
 
         Article updatedArticle = blogService.update(id, request);
 
@@ -117,7 +120,6 @@ public class BlogApiController {
     private String saveImage(MultipartFile image) throws IOException {
         if (image.isEmpty()) return null;
 
-        // 폴더가 없으면 생성
         File dir = new File(UPLOAD_DIR);
         if (!dir.exists()) {
             dir.mkdirs();

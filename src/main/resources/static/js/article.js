@@ -24,6 +24,7 @@ const modifyButton = document.getElementById('modify-btn');
 
 if (modifyButton) {
     modifyButton.addEventListener('click', event => {
+
         let params = new URLSearchParams(location.search);
         let id = params.get('id');
 
@@ -32,10 +33,15 @@ if (modifyButton) {
         formData.append('title', document.getElementById('title').value);
         formData.append('content', document.getElementById('content').value);
 
+        const isNoticeCheckbox = document.getElementById('is-notice');
+        // 관리자가 아니라서 체크박스가 없을 수도 있으므로 null 체크
+        const isNotice = isNoticeCheckbox ? isNoticeCheckbox.checked : false;
+
+        formData.append('isNotice', isNotice);
+
         // 파일이 선택되었을 때만 추가
         const fileInput = document.getElementById('file-input');
         if (fileInput && fileInput.files[0]) {
-            // 백엔드 Controller에서 받는 파라미터 이름(예: "image")과 일치해야 함
             formData.append('image', fileInput.files[0]);
         }
 
@@ -64,10 +70,16 @@ if (createButton) {
         formData.append('title', document.getElementById('title').value);
         formData.append('content', document.getElementById('content').value);
 
+
+        const isNoticeCheckbox = document.getElementById('is-notice');
+        // 관리자가 아니라서 체크박스가 없을 수도 있으므로 null 체크
+        const isNotice = isNoticeCheckbox ? isNoticeCheckbox.checked : false;
+
+        formData.append('isNotice', isNotice);
+
         // 파일 추가
         const fileInput = document.getElementById('file-input');
         if (fileInput && fileInput.files[0]) {
-            // 백엔드 Controller에서 받는 파라미터 이름(예: "image")과 일치해야 함
             formData.append('image', fileInput.files[0]);
         }
 

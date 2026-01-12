@@ -44,7 +44,7 @@ public class BlogService {
                 .orElseThrow(() -> new IllegalArgumentException("not found : " + id));
 
         authorizeArticleAuthor(article);
-        article.update(request.getTitle(), request.getContent(), request.getThumbnailUrl());
+        article.update(request.getTitle(), request.getContent(), request.getThumbnailUrl(),request.getIsNotice());
 
         return article;
     }

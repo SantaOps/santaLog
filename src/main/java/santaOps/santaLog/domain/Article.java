@@ -39,6 +39,9 @@ public class Article {
     @Column(name = "thumbnail_url")
     private String thumbnailUrl;
 
+    @Column(columnDefinition = "boolean default false")
+    private Boolean isNotice = false;
+
     @PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();
@@ -46,20 +49,20 @@ public class Article {
     }
 
     @Builder
-    public Article(String author, String title, String content, String thumbnailUrl){
+    public Article(String author, String title, String content, String thumbnailUrl, Boolean isNotice){
         this.author = author;
         this.title = title;
         this.content = content;
         this.thumbnailUrl = thumbnailUrl;
+        this.isNotice = isNotice;
     }
 
-    public void update(String title, String content, String thumbnailUrl) {
+    public void update(String title, String content, String thumbnailUrl, Boolean isNotice) {
         this.title = title;
         this.content = content;
 
         // 새로운 썸네일 경로가 들어왔을 때만 교체 (null이면 기존 이미지 유지)
-        if (thumbnailUrl != null) {
-            this.thumbnailUrl = thumbnailUrl;
-        }
+        if (thumbnailUrl != null) { this.thumbnailUrl = thumbnailUrl; }
+        if (isNotice != null) this.isNotice = isNotice; // 공지사항 여부 업데이트
     }
 }
