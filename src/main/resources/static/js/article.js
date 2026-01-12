@@ -4,6 +4,7 @@ const deleteButton = document.getElementById('delete-btn');
 if (deleteButton) {
     deleteButton.addEventListener('click', event => {
         let id = document.getElementById('article-id').value;
+
         function success() {
             alert('삭제가 완료되었습니다.');
             location.replace('/articles');
@@ -14,7 +15,7 @@ if (deleteButton) {
             location.replace('/articles');
         }
 
-        httpRequest('DELETE',`/api/articles/${id}`, null, success, fail);
+        httpRequest('DELETE', `/api/articles/${id}`, null, success, fail);
     });
 }
 
@@ -26,10 +27,17 @@ if (modifyButton) {
         let params = new URLSearchParams(location.search);
         let id = params.get('id');
 
-        body = JSON.stringify({
-            title: document.getElementById('title').value,
-            content: document.getElementById('content').value
-        })
+        // [수정] JSON 대신 FormData 사용
+        let formData = new FormData();
+        formData.append('title', document.getElementById('title').value);
+        formData.append('content', document.getElementById('content').value);
+
+        // 파일이 선택되었을 때만 추가
+        const fileInput = document.getElementById('file-input');
+        if (fileInput && fileInput.files[0]) {
+            // 백엔드 Controller에서 받는 파라미터 이름(예: "image")과 일치해야 함
+            formData.append('image', fileInput.files[0]);
+        }
 
         function success() {
             alert('수정 완료되었습니다.');
@@ -41,7 +49,8 @@ if (modifyButton) {
             location.replace(`/articles/${id}`);
         }
 
-        httpRequest('PUT',`/api/articles/${id}`, body, success, fail);
+        // FormData 객체를 그대로 넘김 (JSON.stringify 안함)
+        httpRequest('PUT', `/api/articles/${id}`, formData, success, fail);
     });
 }
 
@@ -49,12 +58,19 @@ if (modifyButton) {
 const createButton = document.getElementById('create-btn');
 
 if (createButton) {
-    // 등록 버튼을 클릭하면 /api/articles로 요청을 보낸다
     createButton.addEventListener('click', event => {
-        body = JSON.stringify({
-            title: document.getElementById('title').value,
-            content: document.getElementById('content').value
-        });
+        // [수정] JSON 대신 FormData 사용
+        let formData = new FormData();
+        formData.append('title', document.getElementById('title').value);
+        formData.append('content', document.getElementById('content').value);
+
+        // 파일 추가
+        const fileInput = document.getElementById('file-input');
+        if (fileInput && fileInput.files[0]) {
+            // 백엔드 Controller에서 받는 파라미터 이름(예: "image")과 일치해야 함
+            formData.append('image', fileInput.files[0]);
+        }
+
         function success() {
             alert('등록 완료되었습니다.');
             location.replace('/articles');
@@ -64,7 +80,7 @@ if (createButton) {
             location.replace('/articles');
         };
 
-        httpRequest('POST','/api/articles', body, success, fail)
+        httpRequest('POST', '/api/articles', formData, success, fail);
     });
 }
 
@@ -75,25 +91,31 @@ function getCookie(key) {
     var cookie = document.cookie.split(';');
     cookie.some(function (item) {
         item = item.replace(' ', '');
-
         var dic = item.split('=');
-
         if (key === dic[0]) {
             result = dic[1];
             return true;
         }
     });
-
     return result;
 }
 
-// HTTP 요청을 보내는 함수
+// HTTP 요청을 보내는 함수 (핵심 수정 부분)
 function httpRequest(method, url, body, success, fail) {
+    // 헤더 설정
+    const headers = {};
+
+    const accessToken = localStorage.getItem('access_token');
+    if (accessToken) {
+        headers['Authorization'] = 'Bearer ' + accessToken;
+    }
+    if (!(body instanceof FormData)) {
+        headers['Content-Type'] = 'application/json';
+    }
+
     fetch(url, {
         method: method,
-        headers: { // 로컬 스토리지에서 액세스 토큰 값을 가져와 헤더에 추가
-            'Content-Type': 'application/json',
-        },
+        headers: headers,
         body: body,
     }).then(response => {
         if (response.status === 200 || response.status === 201) {
@@ -116,7 +138,8 @@ function httpRequest(method, url, body, success, fail) {
                         return res.json();
                     }
                 })
-                .then(result => { // 재발급이 성공하면 로컬 스토리지값을 새로운 액세스 토큰으로 교체
+                .then(result => {
+                    // 재발급 성공 시 토큰 교체 후 재요청
                     localStorage.setItem('access_token', result.accessToken);
                     httpRequest(method, url, body, success, fail);
                 })

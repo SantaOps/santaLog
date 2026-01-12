@@ -4,30 +4,80 @@
     <meta charset="UTF-8">
     <title>블로그 글</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <style>
+        .content-area {
+            line-height: 1.8;
+            word-break: break-all;
+        }
+
+        .content-box {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+    </style>
 </head>
 <body>
-<div class="p-5 mb-5 text-center</> bg-light">
-    <h1 class="mb-3">SantaLog</h1>
-    <h4 class="mb-3">SantaLog에 오신 것을 환영합니다.</h4>
+<div class="p-5 mb-5 bg-light">
+
+    <div class="d-flex align-items-center">
+
+        <a href="/articles" class="mr-4">
+            <img src="/img/logo.png" alt="SantaLog Logo" style="max-height: 80px; width: auto;">
+        </a>
+
+        <div>
+            <h1 class="mb-1 font-weight-bold">SantaLog</h1>
+            <h4 class="mb-0 text-muted">SantaLog에 오신 것을 환영합니다.</h4>
+        </div>
+
+    </div>
 </div>
 
 <div class="container mt-5">
     <div class="row">
-        <div class="col-lg-8">
+        <div class="col-lg-8 mx-auto">
             <article>
                 <input type="hidden" id="article-id" th:value="${article.id}">
-                <header class="mb-4">
-                    <h1 class="fw-bolder mb-1" th:text="${article.title}"></h1>
-                    <div class="text-muted fst-italic mb-2" th:text="|Posted on ${#temporals.format(article.createdAt, 'yyyy-MM-dd HH:mm')} By ${article.author}|"></div>
+
+                <figure class="mb-4 text-center">
+                    <img class="img-fluid rounded"
+                         th:src="${article.thumbnailUrl != null ? '/img/' + article.thumbnailUrl : '/img/default.png'}"
+                         alt="thumbnail"
+                         style="width: 100%; max-height: 400px; object-fit: cover;">
+                </figure>
+
+                <header class="mb-4 d-flex justify-content-between align-items-end">
+                    <h2 class="fw-bolder mb-0" th:text="${article.title}"></h2>
+
+                    <div class="text-muted fst-italic text-right ml-3" style="min-width: fit-content;">
+                        <span class="mr-2" th:text="|[작성자] ${article.author} [작성일시]|"></span>
+                        <span th:text="${#temporals.format(article.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+                    </div>
                 </header>
-                <section class="mb-5">
-                    <p class="fs-5 mb-4" th:text="${article.content}"></p>
-                </section>
-                <button type="button" id="modify-btn"
-                        th:onclick="|location.href='@{/new-article?id={articleId}(articleId=${article.id})}'|"
-                        class="btn btn-primary btn-sm">수정</button>
-                <button type="button" id="delete-btn"
-                        class="btn btn-secondary btn-sm">삭제</button>
+
+                <div class="content-box mb-5">
+                    <section class="content-area">
+                        <p class="fs-5 mb-0" th:text="${article.content}"></p>
+                    </section>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-5">
+                    <button type="button" onclick="location.href='/articles'" class="btn btn-secondary btn-sm">
+                        &larr; 목록
+                    </button>
+
+                    <div>
+                        <button type="button" id="modify-btn"
+                                th:onclick="|location.href='@{/new-article?id={articleId}(articleId=${article.id})}'|"
+                                class="btn btn-primary btn-sm mr-1">수정</button>
+
+                        <button type="button" id="delete-btn"
+                                class="btn btn-danger btn-sm">삭제</button>
+                    </div>
+                </div>
+
             </article>
         </div>
     </div>
@@ -35,3 +85,4 @@
 
 <script src="/js/article.js"></script>
 </body>
+</html>

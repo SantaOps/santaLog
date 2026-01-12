@@ -36,6 +36,9 @@ public class Article {
     @Column(name="author", nullable = false)
     private String author;
 
+    @Column(name = "thumbnail_url")
+    private String thumbnailUrl;
+
     @PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();
@@ -43,13 +46,20 @@ public class Article {
     }
 
     @Builder
-    public Article(String author, String title, String content){
+    public Article(String author, String title, String content, String thumbnailUrl){
         this.author = author;
         this.title = title;
         this.content = content;
+        this.thumbnailUrl = thumbnailUrl;
     }
-    public void update(String title, String content) {
+
+    public void update(String title, String content, String thumbnailUrl) {
         this.title = title;
         this.content = content;
+
+        // 새로운 썸네일 경로가 들어왔을 때만 교체 (null이면 기존 이미지 유지)
+        if (thumbnailUrl != null) {
+            this.thumbnailUrl = thumbnailUrl;
+        }
     }
 }
