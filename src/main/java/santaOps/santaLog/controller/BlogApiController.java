@@ -23,6 +23,7 @@ import java.util.UUID;
 public class BlogApiController {
 
     private final BlogService blogService;
+    // [참고] 경로 구분자는 OS에 따라 다를 수 있으므로 File.separator 사용 권장하지만, 윈도우라면 그대로 둬도 무방합니다.
     private static final String UPLOAD_DIR = "C:/Users/dnjft/SpringProject/santaLog-dev/src/main/resources/static/img/";
 
     /**
@@ -32,7 +33,7 @@ public class BlogApiController {
     public ResponseEntity<Article> addArticle(
             @RequestParam("title") String title,
             @RequestParam("content") String content,
-            @RequestParam(value = "isNotice", required = false) Boolean isNotice, // 파라미터 받기
+            @RequestParam(value = "isNotice", required = false) Boolean isNotice,
             @RequestPart(value = "image", required = false) MultipartFile image,
             Principal principal
     ) throws IOException {
@@ -46,7 +47,6 @@ public class BlogApiController {
             fileName = saveImage(image);
         }
 
-        // [수정] null 체크 후 boolean 변환 (체크 안하면 null로 올 수 있음 -> false로 처리)
         boolean isNoticeValue = (isNotice != null) && isNotice;
 
         AddArticleRequest request = new AddArticleRequest(title, content, fileName, isNoticeValue);
@@ -95,7 +95,7 @@ public class BlogApiController {
             @PathVariable long id,
             @RequestParam("title") String title,
             @RequestParam("content") String content,
-            @RequestParam(value = "isNotice", required = false) Boolean isNotice, // [추가] 수정 시에도 공지 여부 받기
+            @RequestParam(value = "isNotice", required = false) Boolean isNotice,
             @RequestPart(value = "image", required = false) MultipartFile image
     ) throws IOException {
 
@@ -104,10 +104,12 @@ public class BlogApiController {
             fileName = saveImage(image);
         }
 
-        // [수정] null 체크
+        // null 체크
         boolean isNoticeValue = (isNotice != null) && isNotice;
 
-        UpdateArticleRequest request = new UpdateArticleRequest(title, content, fileName, isNoticeValue);
+        // [수정] DTO 생성자 인자 개수 맞춤 (5개)
+        // 마지막 인자(isWarned)에 null을 전달하여 "경고 상태는 변경 없음"을 의미함
+        UpdateArticleRequest request = new UpdateArticleRequest(title, content, fileName, isNoticeValue, null);
 
         Article updatedArticle = blogService.update(id, request);
 
@@ -135,4 +137,25 @@ public class BlogApiController {
 
         return storeFileName;
     }
+
+    /**
+     * [추가] 게시글 경고 주기 (PUT)
+     * URL: /api/articles/{id}/warn
+     */
+    @PutMapping("articles/{id}/warn") // [수정] /api/ 중복 제거
+    public ResponseEntity<Void> warnArticle(@PathVariable Long id) {
+        blogService.warnArticle(id);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 경고 취소 (DELETE)
+     * URL: /api/articles/{id}/warn
+     */
+    @DeleteMapping("articles/{id}/warn")
+    public ResponseEntity<Void> unWarnArticle(@PathVariable Long id) {
+        blogService.unWarnArticle(id);
+        return ResponseEntity.ok().build();
+    }
+
 }

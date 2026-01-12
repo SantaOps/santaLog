@@ -16,6 +16,7 @@ public class ArticleViewResponse {
     private LocalDateTime createdAt;
     private String thumbnailUrl;
     private boolean isNotice;
+    private boolean isWarned;
     private String author;
 
     public ArticleViewResponse(Article article){
@@ -26,6 +27,7 @@ public class ArticleViewResponse {
         this.author = article.getAuthor();
         this.thumbnailUrl = article.getThumbnailUrl();
         this.isNotice = article.getIsNotice();
+        this.isWarned = article.getIsWarned();
     }
 
 }

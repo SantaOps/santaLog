@@ -12,4 +12,5 @@ public class UpdateArticleRequest {
     private String content;
     private String thumbnailUrl;
     private Boolean isNotice;
+    private Boolean isWarned;
 }
