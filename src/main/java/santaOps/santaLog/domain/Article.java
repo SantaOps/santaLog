@@ -36,6 +36,9 @@ public class Article {
     @Column(name="author", nullable = false)
     private String author;
 
+    @Column(name = "thumbnail_url")
+    private String thumbnailUrl;
+
     @PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();
