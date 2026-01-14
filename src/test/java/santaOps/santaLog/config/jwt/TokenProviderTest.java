@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import santaOps.santaLog.config.oauth.OAuth2SuccessHandler;
 import santaOps.santaLog.domain.Role;
 import santaOps.santaLog.domain.User;
 import santaOps.santaLog.repository.UserRepository;
@@ -36,7 +37,7 @@ public class TokenProviderTest {
                 .build());
 
 
-        String token = tokenProvider.generateToken(testUser, Duration.ofDays(14));
+        String token = tokenProvider.generateToken(testUser, OAuth2SuccessHandler.ACCESS_TOKEN_DURATION);
 
         Long userId = Jwts.parser()
                 .setSigningKey(jwtProperties.getSecretKey())
