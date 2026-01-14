@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import santaOps.santaLog.dto.AddUserRequest;
 import santaOps.santaLog.service.UserService;
+import jakarta.servlet.http.Cookie;
 
 @RequiredArgsConstructor
 @Controller
@@ -31,10 +32,25 @@ public class UserApiController {
 
     @GetMapping("/logout")
     public String logout(HttpServletRequest request, HttpServletResponse response){
+
+        // 서버 메모리의 인증정보 제거
         new SecurityContextLogoutHandler().logout(
                 request, response,
                 SecurityContextHolder.getContext().getAuthentication()
         );
+
+        // 2. 브라우저 ACCESS_TOKEN 삭제
+        Cookie accessTokenCookie = new Cookie("ACCESS_TOKEN", null);
+        accessTokenCookie.setPath("/");
+        accessTokenCookie.setMaxAge(0); // 이 설정이 핵심!
+        response.addCookie(accessTokenCookie);
+
+        // 브라우저의 refresh_token 삭제
+        Cookie refreshCookie = new Cookie("refresh_token", null);
+        refreshCookie.setPath("/");
+        refreshCookie.setMaxAge(0);
+        response.addCookie(refreshCookie);
+        
         return "redirect:/login";
     }
 
