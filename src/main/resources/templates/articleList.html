@@ -108,8 +108,17 @@
                 <span sec:authorize="hasRole('ADMIN')" style="font-size: 0.6em; ">- 관리자 페이지</span>
             </h1>
         </div>
-        <div>
-            <button type="button" class="btn btn-outline-danger btn-sm" onclick="location.href='/logout'">로그아웃</button>
+        <div class="d-flex align-items-center">
+            <button sec:authorize="hasRole('ADMIN')"
+                    type="button"
+                    class="btn btn-outline-dark btn-sm mr-2"
+                    onclick="location.href='/admin/stats'">
+                <i class="fas fa-chart-bar"></i> 통계 확인
+            </button>
+
+            <button type="button" class="btn btn-outline-danger btn-sm" onclick="location.href='/logout'">
+                <i class="fas fa-sign-out-alt"></i> 로그아웃
+            </button>
         </div>
     </div>
 </div>

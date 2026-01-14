@@ -70,4 +70,9 @@ public class BlogService {
         article.unWarn(); // 엔티티의 메서드 호출
     }
 
+    public long countArticles() {
+        return blogRepository.count();
+    }
+
+
 }
