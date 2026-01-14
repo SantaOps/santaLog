@@ -34,7 +34,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             HttpServletRequest request,
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
-
+        String path = request.getRequestURI();
         // 1. 헤더에서 토큰 가져오기
         String authorizationHeader = request.getHeader(HEADER_AUTHORIZATION);
         String token = getAccessToken(authorizationHeader);
@@ -49,6 +49,21 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
                         .map(Cookie::getValue)
                         .orElse(null);
             }
+        }
+
+        // 토큰 디버깅 로그 추가
+        if (token != null) {
+            if (tokenProvider.validToken(token)) {
+                System.out.println("✅ [Filter] 유효한 토큰 발견! 경로: " + path);
+                Authentication authentication = tokenProvider.getAuthentication(token);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } else {
+                System.out.println("❌ [Filter] 토큰이 만료됨! 인증 정보 삭제. 경로: " + path);
+                SecurityContextHolder.clearContext();
+            }
+        } else {
+            System.out.println("ℹ️ [Filter] 토큰이 없음 (익명 사용자). 경로: " + path);
+            SecurityContextHolder.clearContext();
         }
 
         if (token != null && tokenProvider.validToken(token)) {

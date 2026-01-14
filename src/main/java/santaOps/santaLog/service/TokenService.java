@@ -3,9 +3,8 @@ package santaOps.santaLog.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import santaOps.santaLog.config.jwt.TokenProvider;
+import santaOps.santaLog.config.oauth.OAuth2SuccessHandler;
 import santaOps.santaLog.domain.User;
-
-import java.time.Duration;
 
 @RequiredArgsConstructor
 @Service
@@ -23,7 +22,7 @@ public class TokenService {
 
         Long userId = refreshTokenService.findByRefreshToken(refreshToken).getUserId();
         User user = userService.findById(userId);
-        return tokenProvider.generateToken(user, Duration.ofDays(2));
+        return tokenProvider.generateToken(user, OAuth2SuccessHandler.ACCESS_TOKEN_DURATION);
     }
 
 }

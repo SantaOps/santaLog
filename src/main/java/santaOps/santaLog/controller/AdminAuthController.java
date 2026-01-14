@@ -7,6 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import santaOps.santaLog.config.jwt.TokenProvider;
+import santaOps.santaLog.config.oauth.OAuth2SuccessHandler;
 import santaOps.santaLog.domain.Role;
 import santaOps.santaLog.domain.User;
 import santaOps.santaLog.service.UserService;
@@ -44,13 +45,13 @@ public class AdminAuthController {
         }
 
         // 새 JWT 발급
-        String token = tokenProvider.generateToken(admin, Duration.ofHours(2));
+        String token = tokenProvider.generateToken(admin, OAuth2SuccessHandler.ACCESS_TOKEN_DURATION);
 
         // HttpOnly 쿠키로 내려주기
         Cookie cookie = new Cookie("ACCESS_TOKEN", token);
         cookie.setHttpOnly(true);
         cookie.setPath("/");
-        cookie.setMaxAge((int) Duration.ofHours(2).getSeconds());
+        cookie.setMaxAge((int) OAuth2SuccessHandler.ACCESS_TOKEN_DURATION.toSeconds());
         cookie.setSecure(false); // TODO: HTTPS 사용 시 true로 변경
         response.addCookie(cookie);
 

@@ -49,10 +49,15 @@ public class TokenProvider {
 
     public boolean validToken(String token) {
         try {
-            Jwts.parser()
+            Claims claims = Jwts.parser()
                     .setSigningKey(jwtProperties.getSecretKey())
-                    .parseClaimsJws(token);
-            return true;
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            System.out.println("현재 시간: " + new Date());
+            System.out.println("토큰 만료 시간: " + claims.getExpiration());
+
+            return !claims.getExpiration().before(new Date());
         } catch (Exception e) {
             return false;
         }
