@@ -12,7 +12,7 @@ spring:
               - email
               - profile
   datasource:
-    url: jdbc:mariadb://localhost:3306/SantaLogDB
+    url: jdbc:mariadb://localhost:3306/auth_db
     username: root        # MariaDB root 계정
     password:
     driver-class-name: org.mariadb.jdbc.Driver
