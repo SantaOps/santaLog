@@ -8,14 +8,13 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import santaOps.santaLog.service.BlogService;
-import santaOps.santaLog.service.UserService;
 
 @RequiredArgsConstructor
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
 
-    private final UserService userService;
+//    private final UserService userService;
     private final BlogService blogService;
 
     @GetMapping("/login")
@@ -30,7 +29,7 @@ public class AdminController {
 
     @GetMapping("/stats")
     public String showStatistics(Model model) {
-        model.addAttribute("totalUsers", userService.countUsers());
+        model.addAttribute("totalUsers", null);
         model.addAttribute("totalArticles", blogService.countArticles());
 
         return "admin/stats";
