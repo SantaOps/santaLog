@@ -1,2 +1,3 @@
-rootProject.name = 'SantaLog'
-
+rootProject.name = 'santaLog-dev'
+include 'santaLog-auth'
+include 'santaLog-article'

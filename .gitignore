@@ -43,3 +43,5 @@ bin/
 /.idea/
 
 /.env
+/santaLog-article/.env
+/santaLog-auth/.env
