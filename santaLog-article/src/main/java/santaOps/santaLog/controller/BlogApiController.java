@@ -23,7 +23,7 @@ import java.util.UUID;
 public class BlogApiController {
 
     private final BlogService blogService;
-    private static final String UPLOAD_DIR = "C:/Users/dnjft/SpringProject/santaLog-dev/src/main/resources/static/img/";
+    private static final String UPLOAD_DIR = "C:/Users/dnjft/SpringProject/santaLog-dev/santaLog-article/src/main/resources/static/img/";
 
     /**
      * 글 등록 (POST)
