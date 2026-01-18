@@ -54,6 +54,7 @@ public class WebOAuthSecurityConfig {
                         .requestMatchers("/admin/login").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/**").authenticated()
+                        .requestMatchers("/api/admin/users/count").hasRole("ADMIN")
                         .anyRequest().permitAll()
                 );
 
