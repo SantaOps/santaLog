@@ -1,7 +1,5 @@
 package santaOps.santaLog.controller;
 
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,25 +12,14 @@ import santaOps.santaLog.service.BlogService;
 @RequestMapping("/admin")
 public class AdminController {
 
-//    private final UserService userService;
     private final BlogService blogService;
-
-    @GetMapping("/login")
-    public String loginPage(HttpServletResponse response) {
-        Cookie cookie = new Cookie("ACCESS_TOKEN", null);
-        cookie.setMaxAge(0);
-        cookie.setPath("/");
-        response.addCookie(cookie);
-        return "admin/login";
-    }
-
 
     @GetMapping("/stats")
     public String showStatistics(Model model) {
-        model.addAttribute("totalUsers", null);
         model.addAttribute("totalArticles", blogService.countArticles());
+        // TODO 유저 수는 나중에 Auth 서버와 통신(API)해서 가져와야 하므로 일단 null 유지
+        model.addAttribute("totalUsers", 0);
 
-        return "admin/stats";
+        return "admin/stats"; // templates/admin/stats.html 호출
     }
-
 }

@@ -50,8 +50,8 @@ public class UserApiController {
         refreshCookie.setPath("/");
         refreshCookie.setMaxAge(0);
         response.addCookie(refreshCookie);
-        
-        return "redirect:/login";
+
+        return "redirect:http://localhost:8080/login";
     }
 
 }

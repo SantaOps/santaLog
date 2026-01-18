@@ -25,7 +25,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     public static final String ACCESS_TOKEN_COOKIE_NAME = "ACCESS_TOKEN";
     public static final Duration REFRESH_TOKEN_DURATION = Duration.ofDays(14);
     public static final Duration ACCESS_TOKEN_DURATION = Duration.ofDays(1);
-    public static final String REDIRECT_PATH = "/articles";
+
+    // Article 서버(8081)의 게시글 목록 주소로 지정
+    public static final String REDIRECT_PATH = "http://localhost:8081/articles";
 
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
@@ -42,14 +44,18 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         saveRefreshToken(user.getId(), refreshToken);
         addRefreshTokenToCookie(request, response, refreshToken);
 
-        // 2. 액세스 토큰 생성 -> URL 파라미터가 아니라 쿠키에 저장
+        // 2. 액세스 토큰 생성 -> 쿠키에 저장
+        // 도메인(localhost)이 같으면 8080에서 구운 쿠키를 8081로 전송
         String accessToken = tokenProvider.generateToken(user, ACCESS_TOKEN_DURATION);
         addAccessTokenToCookie(response, accessToken);
 
-        // 3. 토큰은 쿠키에 담았으니, URL은  /articles 로만 설정
+        // 3. 리다이렉트 경로 설정 (http://localhost:8081/articles)
         String targetUrl = getTargetUrl();
 
+        // 인증 관련 설정값들 정리
         clearAuthenticationAttributes(request, response);
+
+        // 4. 브라우저를 Article 서버(8081)로 이동시킴
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 
@@ -67,10 +73,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         CookieUtil.addCookie(response, REFRESH_TOKEN_COOKIE_NAME, refreshToken, cookieMaxAge);
     }
 
-    // 액세스 토큰을 쿠키에 굽는 메서드
     private void addAccessTokenToCookie(HttpServletResponse response, String accessToken) {
         int cookieMaxAge = (int) ACCESS_TOKEN_DURATION.toSeconds();
-        // 이미 util에 있는 메서드 활용 (ACCESS_TOKEN 이름으로 저장)
         CookieUtil.addCookie(response, ACCESS_TOKEN_COOKIE_NAME, accessToken, cookieMaxAge);
     }
 
@@ -79,7 +83,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         authorizationRequestRepository.removeAuthorizationRequestCookies(request, response);
     }
 
-    // URL에서 토큰 파라미터 제거
     private String getTargetUrl() {
         return UriComponentsBuilder.fromUriString(REDIRECT_PATH)
                 .build()

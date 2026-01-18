@@ -34,8 +34,8 @@ public class WebOAuthSecurityConfig {
 
         http
                 .httpBasic().disable()
-                .formLogin().disable()
-                .logout().disable();
+                .formLogin().disable();
+
 
         http
                 .sessionManagement()
@@ -64,6 +64,13 @@ public class WebOAuthSecurityConfig {
                 .successHandler(oAuth2SuccessHandler())
                 .userInfoEndpoint(userInfo -> userInfo
                         .userService(oAuth2UserCustomService))
+        );
+
+        http.logout(logout -> logout
+                .logoutUrl("/logout") // 로그아웃 처리 URL
+                .logoutSuccessUrl("http://localhost:8080/login") // 로그아웃 성공 시 리다이렉트 주소
+                .deleteCookies("ACCESS_TOKEN", "JSESSIONID") // 쿠키 삭제
+                .invalidateHttpSession(true) // 세션 무효화
         );
 
         return http.build();
