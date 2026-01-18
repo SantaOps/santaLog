@@ -5,6 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.client.RestTemplate;
 import santaOps.santaLog.service.BlogService;
 
 @RequiredArgsConstructor
@@ -13,13 +14,18 @@ import santaOps.santaLog.service.BlogService;
 public class AdminController {
 
     private final BlogService blogService;
+    private final RestTemplate restTemplate; // 주입받기
 
     @GetMapping("/stats")
     public String showStatistics(Model model) {
         model.addAttribute("totalArticles", blogService.countArticles());
-        // TODO 유저 수는 나중에 Auth 서버와 통신(API)해서 가져와야 하므로 일단 null 유지
-        model.addAttribute("totalUsers", 0);
-
+        try {
+            String authUrl = "http://localhost:8080/users/count";
+            Long userCount = restTemplate.getForObject(authUrl, Long.class);
+            model.addAttribute("totalUsers", userCount != null ? userCount : 0);
+        } catch (Exception e) {
+            model.addAttribute("totalUsers", 0);
+        }
         return "admin/stats"; // templates/admin/stats.html 호출
     }
 }
