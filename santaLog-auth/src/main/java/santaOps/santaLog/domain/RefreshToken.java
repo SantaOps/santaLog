@@ -17,8 +17,12 @@ public class RefreshToken {
     @Indexed // 토큰 값으로 조회가 가능하도록 인덱스 설정
     private String refreshToken;
 
-    public RefreshToken update(String newRefreshToken) {
+
+    private String username;
+
+    public RefreshToken update(String newRefreshToken, String username) {
         this.refreshToken = newRefreshToken;
+        this.username = username;
         return this;
     }
 }

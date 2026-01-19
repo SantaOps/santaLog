@@ -19,20 +19,14 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf().disable()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
+        http.csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
-                .authorizeRequests()
-                .requestMatchers("/api/articles/**").authenticated()
-                .requestMatchers("/articles/**").permitAll()
-                .anyRequest().permitAll()
-                .and()
-                .logout()
-                .logoutUrl("/logout")
-                .logoutSuccessUrl("http://localhost:8080/login")
-                .deleteCookies("ACCESS_TOKEN")
-                .invalidateHttpSession(true);
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/articles/**").authenticated()
+                        .requestMatchers("/articles/**").permitAll()
+                        .anyRequest().permitAll()
+                );
 
         return http.build();
     }

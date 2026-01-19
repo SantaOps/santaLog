@@ -20,14 +20,20 @@ public class RefreshTokenService {
 
     // 로그인 시 토큰 저장 또는 업데이트
     @Transactional
-    public void saveOrUpdate(Long userId, String newRefreshToken) {
+    public void saveOrUpdate(Long userId, String username, String newRefreshToken) {
         RefreshToken token = refreshTokenRepository.findById(userId)
                 .map(t -> {
-                    t.update(newRefreshToken);
+                    t.update(newRefreshToken, username);
                     return t;
                 })
-                .orElse(new RefreshToken(userId, newRefreshToken));
+                .orElse(new RefreshToken(userId, newRefreshToken, username));
 
         refreshTokenRepository.save(token);
     }
+
+    @Transactional
+    public void deleteByUserId(Long userId){
+        refreshTokenRepository.deleteById(userId);
+    }
+
 }
