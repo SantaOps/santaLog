@@ -1,4 +1,4 @@
-package santaOps.santaLog.domain.article;
+package santaOps.santaLog.domain;
 
 public enum Role {
     USER,

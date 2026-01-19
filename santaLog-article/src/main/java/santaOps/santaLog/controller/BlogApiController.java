@@ -25,14 +25,12 @@ import java.util.UUID;
 public class BlogApiController {
 
     private final BlogService blogService;
-    // application.yml에서 값을 가져옴
     @Value("${upload.path}")
     private String rawPath;
     private String uploadDir;
 
     @PostConstruct
     public void init() {
-        // .env에 "file:///C:/..."라고 적혀 있을 경우, 파일 저장을 위해 "C:/..."로 변환
         this.uploadDir = rawPath.replace("file:///", "");
 
         // 경로 끝에 슬래시가 없다면 붙여줌
@@ -129,7 +127,6 @@ public class BlogApiController {
         boolean isWarnedValue = currentArticle.getIsWarned();
 
 
-        // 마지막 인자(isWarned)에 null을 전달하여 "경고 상태는 변경 없음"을 의미함
         UpdateArticleRequest request = new UpdateArticleRequest(title, content, fileName, isNoticeValue, isWarnedValue);
         Article updatedArticle = blogService.update(id, request);
 

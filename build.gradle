@@ -1,11 +1,9 @@
 plugins {
-    // 공통으로 사용할 플러그인 버전 정의 (여기서 실행하지는 않음)
     id 'java'
     id 'org.springframework.boot' version '3.0.2' apply false
     id 'io.spring.dependency-management' version '1.1.0' apply false
 }
 
-// 모든 하위 모듈(auth, article)에 공통으로 적용될 설정
 subprojects {
     apply plugin: 'java'
     apply plugin: 'org.springframework.boot'
@@ -14,7 +12,6 @@ subprojects {
     group = 'santaOps.santaLog'
     version = '1.0'
 
-    // 이 부분이 질문하신 에러를 방지하는 표준 문법입니다
     java {
         sourceCompatibility = '17'
     }
@@ -23,11 +20,32 @@ subprojects {
         mavenCentral()
     }
 
-    // 모든 모듈이 공통으로 사용하는 라이브러리 (선택 사항)
     dependencies {
+        // 모든 모듈 공통 의존성
+        implementation 'org.springframework.boot:spring-boot-starter-web'
+        implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+        implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+        implementation 'org.springframework.boot:spring-boot-starter-security'
+        implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+        implementation 'org.mariadb.jdbc:mariadb-java-client:3.1.4'
+        implementation 'me.paulschwarz:spring-dotenv:4.0.0'
+
+        // JWT & XML Bind
+        implementation 'io.jsonwebtoken:jjwt:0.9.1'
+        implementation 'javax.xml.bind:jaxb-api:2.3.1'
+
+        // Security Extras
+        implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+
+        // Lombok
         compileOnly 'org.projectlombok:lombok'
         annotationProcessor 'org.projectlombok:lombok'
+        testAnnotationProcessor 'org.projectlombok:lombok'
+        testImplementation 'org.projectlombok:lombok'
+
+        // Test & Runtime
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testImplementation 'org.springframework.security:spring-security-test'
     }
 
     test {

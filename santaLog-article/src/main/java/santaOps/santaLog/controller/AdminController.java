@@ -26,6 +26,6 @@ public class AdminController {
         } catch (Exception e) {
             model.addAttribute("totalUsers", 0);
         }
-        return "admin/stats"; // templates/admin/stats.html 호출
+        return "admin/stats";
     }
 }
