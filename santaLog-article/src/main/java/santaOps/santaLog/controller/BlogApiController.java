@@ -1,6 +1,8 @@
 package santaOps.santaLog.controller;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +25,21 @@ import java.util.UUID;
 public class BlogApiController {
 
     private final BlogService blogService;
-    private static final String UPLOAD_DIR = "C:/Users/dnjft/SpringProject/santaLog-dev/santaLog-article/src/main/resources/static/img/";
+    // application.yml에서 값을 가져옴
+    @Value("${upload.path}")
+    private String rawPath;
+    private String uploadDir;
+
+    @PostConstruct
+    public void init() {
+        // .env에 "file:///C:/..."라고 적혀 있을 경우, 파일 저장을 위해 "C:/..."로 변환
+        this.uploadDir = rawPath.replace("file:///", "");
+
+        // 경로 끝에 슬래시가 없다면 붙여줌
+        if (!this.uploadDir.endsWith("/")) {
+            this.uploadDir += "/";
+        }
+    }
 
     /**
      * 글 등록 (POST)
@@ -126,17 +142,16 @@ public class BlogApiController {
     private String saveImage(MultipartFile image) throws IOException {
         if (image.isEmpty()) return null;
 
-        File dir = new File(UPLOAD_DIR);
+        File dir = new File(uploadDir);
         if (!dir.exists()) {
             dir.mkdirs();
         }
 
-        // 파일명 중복 방지를 위한 UUID
         String originalFilename = image.getOriginalFilename();
         String storeFileName = UUID.randomUUID() + "_" + originalFilename;
 
-        // 파일 저장
-        File dest = new File(UPLOAD_DIR + storeFileName);
+        // 멤버 변수인 uploadDir 사용
+        File dest = new File(uploadDir + storeFileName);
         image.transferTo(dest);
 
         return storeFileName;
