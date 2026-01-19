@@ -1,34 +1,28 @@
 package santaOps.santaLog.domain;
 
-import jakarta.persistence.*;
-import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.redis.core.RedisHash;
+import org.springframework.data.redis.core.index.Indexed;
 
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Entity
+@AllArgsConstructor
+@RedisHash(value = "refreshToken", timeToLive = 1209600) // 14일 (초 단위: 14 * 24 * 60 * 60)
 public class RefreshToken {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="id",updatable = false)
-    private Long id;
-
-    @Column(name="user_id",nullable = false,unique = true)
+    @Id // Redis의 Key (refreshToken:1)
     private Long userId;
 
-    @Column(name="refresh_token",nullable = false)
+    @Indexed // 토큰 값으로 조회가 가능하도록 인덱스 설정
     private String refreshToken;
 
-    public RefreshToken(Long userId, String refreshToken){
-        this.userId = userId;
-        this.refreshToken = refreshToken;
-    }
 
-    public RefreshToken update(String newRefreshToken){
+    private String username;
+
+    public RefreshToken update(String newRefreshToken, String username) {
         this.refreshToken = newRefreshToken;
+        this.username = username;
         return this;
     }
-
 }

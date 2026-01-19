@@ -12,6 +12,7 @@ import santaOps.santaLog.config.oauth.OAuth2AuthorizationRequestBasedOnCookieRep
 import santaOps.santaLog.config.oauth.OAuth2SuccessHandler;
 import santaOps.santaLog.config.oauth.OAuth2UserCustomService;
 import santaOps.santaLog.repository.RefreshTokenRepository;
+import santaOps.santaLog.service.RefreshTokenService;
 import santaOps.santaLog.service.UserService;
 
 @RequiredArgsConstructor
@@ -22,6 +23,7 @@ public class WebOAuthSecurityConfig {
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserService userService;
+    private final RefreshTokenService refreshTokenService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -49,7 +51,7 @@ public class WebOAuthSecurityConfig {
 
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/token").permitAll()
+                        .requestMatchers("/api/token", "/login", "/signup", "/logout").permitAll()
                         .requestMatchers("/auth/admin/login").permitAll()
                         .requestMatchers("/admin/login").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
@@ -57,6 +59,7 @@ public class WebOAuthSecurityConfig {
                         .requestMatchers("/api/admin/users/count").hasRole("ADMIN")
                         .anyRequest().permitAll()
                 );
+        http.logout(logout -> logout.disable()); // 이걸 안 해주면 시큐리티가 가로챔
 
         http.oauth2Login(oauth2 -> oauth2
                 .loginPage("/login")
@@ -66,14 +69,6 @@ public class WebOAuthSecurityConfig {
                 .userInfoEndpoint(userInfo -> userInfo
                         .userService(oAuth2UserCustomService))
         );
-
-        http.logout(logout -> logout
-                .logoutUrl("/logout") // 로그아웃 처리 URL
-                .logoutSuccessUrl("http://localhost:8080/login") // 로그아웃 성공 시 리다이렉트 주소
-                .deleteCookies("ACCESS_TOKEN", "JSESSIONID") // 쿠키 삭제
-                .invalidateHttpSession(true) // 세션 무효화
-        );
-
         return http.build();
     }
 
