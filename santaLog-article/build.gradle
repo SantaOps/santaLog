@@ -3,4 +3,6 @@ dependencies {
 
 bootJar {
     mainClass = 'santaOps.santaLog.ArticleApplication'
+    archiveFileName = "app.jar"
+
 }
