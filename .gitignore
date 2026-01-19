@@ -45,3 +45,4 @@ bin/
 /.env
 /santaLog-article/.env
 /santaLog-auth/.env
+/santaLog-article/src/main/resources/static/img/
