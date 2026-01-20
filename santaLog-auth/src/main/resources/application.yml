@@ -15,9 +15,13 @@ spring:
               - email
               - profile
   datasource:
-    url: jdbc:mariadb://localhost:3306/auth_db
-    username: root        # MariaDB root 계정
-    password:
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 3000
+    url: jdbc:mariadb://${DB_HOST}:${DB_PORT}/auth_db
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
     driver-class-name: org.mariadb.jdbc.Driver
 
   jpa:
@@ -25,7 +29,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        ddl-auto: update
 
 
 jwt:
