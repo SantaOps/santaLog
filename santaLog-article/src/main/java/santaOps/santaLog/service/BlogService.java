@@ -19,6 +19,9 @@ public class BlogService {
 
 
     public Article save(AddArticleRequest request, String userName) {
+        if (request.getIsNotice() != null && request.getIsNotice()) {
+            authorizeAdmin();
+        }
         return blogRepository.save(request.toEntity(userName));
     }
 
@@ -58,6 +61,7 @@ public class BlogService {
 
     @Transactional
     public void warnArticle(Long id) {
+        authorizeAdmin();
         Article article = blogRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("글이 없습니다: " + id));
         article.warn();
@@ -65,9 +69,20 @@ public class BlogService {
 
     @Transactional // 트랜잭션 필수!
     public void unWarnArticle(Long id) {
+        authorizeAdmin();
         Article article = blogRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("not found: " + id));
         article.unWarn(); // 엔티티의 메서드 호출
+    }
+
+    private void authorizeAdmin() {
+        boolean isAdmin = SecurityContextHolder.getContext().getAuthentication()
+                .getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!isAdmin) {
+            throw new IllegalArgumentException("관리자만 접근 가능한 기능입니다.");
+        }
     }
 
     public long countArticles() {
