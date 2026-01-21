@@ -36,6 +36,6 @@ spring:
 
 
 jwt:
-  issuer: ajufresh@gmail.com
-  secret_key: study-springboot
+  issuer: ${JWT_ISSUER}
+  secret_key: ${JWT_SECRET_KEY}
 
