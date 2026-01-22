@@ -17,15 +17,19 @@ spring:
               - email
               - profile
 
-  # MariaDB 설정 (Auth DB)
+  # MariaDB 설정 (Auth DB 전용 변수 매핑)
   datasource:
     hikari:
+      connection-test-query: SELECT 1
+      test-on-borrow: true
+      max-lifetime: 1800000
       maximum-pool-size: 10
       minimum-idle: 2
       connection-timeout: 3000
-    url: jdbc:mariadb://${DB_HOST}:${DB_PORT}/auth_db
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
+
+    url: jdbc:mariadb://${AUTH_DB_HOST}:${AUTH_DB_PORT}/auth_db
+    username: ${AUTH_DB_USERNAME}
+    password: ${AUTH_DB_PASSWORD}
     driver-class-name: org.mariadb.jdbc.Driver
 
   # Redis Sentinel 설정
@@ -46,6 +50,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.MariaDBDialect
 
 jwt:
   issuer: ${JWT_ISSUER}

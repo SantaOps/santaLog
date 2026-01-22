@@ -46,3 +46,5 @@ bin/
 /santaLog-article/.env
 /santaLog-auth/.env
 /santaLog-article/src/main/resources/static/img/
+/santaLog-article/src/main/resources/.env
+/santaLog-auth/src/main/resources/.env
