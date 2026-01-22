@@ -10,9 +10,6 @@ cloud:
     stack:
       auto: false
 
-upload:
-  path: ${IMG_PATH}
-
 server:
   port: 8081
 

@@ -1,8 +1,6 @@
 package santaOps.santaLog.controller;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,12 +10,11 @@ import santaOps.santaLog.dto.AddArticleRequest;
 import santaOps.santaLog.dto.ArticleResponse;
 import santaOps.santaLog.dto.UpdateArticleRequest;
 import santaOps.santaLog.service.BlogService;
+import santaOps.santaLog.service.S3Service;
 
-import java.io.File;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
@@ -25,19 +22,7 @@ import java.util.UUID;
 public class BlogApiController {
 
     private final BlogService blogService;
-    @Value("${upload.path}")
-    private String rawPath;
-    private String uploadDir;
-
-    @PostConstruct
-    public void init() {
-        this.uploadDir = rawPath.replace("file:///", "");
-
-        // 경로 끝에 슬래시가 없다면 붙여줌
-        if (!this.uploadDir.endsWith("/")) {
-            this.uploadDir += "/";
-        }
-    }
+    private final S3Service s3Service;
 
     /**
      * 글 등록 (POST)
@@ -55,20 +40,20 @@ public class BlogApiController {
             throw new RuntimeException("로그인 정보가 없습니다.");
         }
         if (title == null || title.trim().isEmpty()) {
-            return ResponseEntity.badRequest().build(); // title에 아무런 값이 없는 경우
+            return ResponseEntity.badRequest().build();
         }
-        String fileName = null;
+
+        // 로컬 저장 대신 S3 업로드 후 URL 반환받음
+        String imageUrl = null;
         if (image != null && !image.isEmpty()) {
-            fileName = saveImage(image);
+            imageUrl = s3Service.upload(image);
         }
 
         boolean isNoticeValue = (isNotice != null) && isNotice;
-        boolean isWarnValue = (isNotice != null) && isNotice;
 
-        AddArticleRequest request = new AddArticleRequest(title, content, fileName, isNoticeValue, false);
+        AddArticleRequest request = new AddArticleRequest(title, content, imageUrl, isNoticeValue, false);
 
         String email = principal.getName();
-
         Article savedArticle = blogService.save(request, email);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedArticle);
     }
@@ -115,50 +100,27 @@ public class BlogApiController {
             @RequestPart(value = "image", required = false) MultipartFile image
     ) throws IOException {
 
-        String fileName = null;
+        Article currentArticle = blogService.findById(id);
+
+        // 새로운 이미지가 들어오면 S3 업로드, 아니면 기존 URL 유지
+        String imageUrl = currentArticle.getThumbnailUrl();
         if (image != null && !image.isEmpty()) {
-            fileName = saveImage(image);
+            imageUrl = s3Service.upload(image);
         }
 
-        // null 체크
         boolean isNoticeValue = (isNotice != null) && isNotice;
-
-        Article currentArticle = blogService.findById(id);
         boolean isWarnedValue = currentArticle.getIsWarned();
 
-
-        UpdateArticleRequest request = new UpdateArticleRequest(title, content, fileName, isNoticeValue, isWarnedValue);
+        UpdateArticleRequest request = new UpdateArticleRequest(title, content, imageUrl, isNoticeValue, isWarnedValue);
         Article updatedArticle = blogService.update(id, request);
 
         return ResponseEntity.ok().body(updatedArticle);
     }
 
     /**
-     * [내부 메서드] 실제 파일을 디스크에 저장하고 저장된 파일명을 반환
+     * 게시글 경고 주기 (PUT)
      */
-    private String saveImage(MultipartFile image) throws IOException {
-        if (image.isEmpty()) return null;
-
-        File dir = new File(uploadDir);
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-
-        String originalFilename = image.getOriginalFilename();
-        String storeFileName = UUID.randomUUID() + "_" + originalFilename;
-
-        // 멤버 변수인 uploadDir 사용
-        File dest = new File(uploadDir + storeFileName);
-        image.transferTo(dest);
-
-        return storeFileName;
-    }
-
-    /**
-     * [추가] 게시글 경고 주기 (PUT)
-     * URL: /api/articles/{id}/warn
-     */
-    @PutMapping("articles/{id}/warn") // [수정] /api/ 중복 제거
+    @PutMapping("articles/{id}/warn")
     public ResponseEntity<Void> warnArticle(@PathVariable Long id) {
         blogService.warnArticle(id);
         return ResponseEntity.ok().build();
@@ -166,12 +128,10 @@ public class BlogApiController {
 
     /**
      * 경고 취소 (DELETE)
-     * URL: /api/articles/{id}/warn
      */
     @DeleteMapping("articles/{id}/warn")
     public ResponseEntity<Void> unWarnArticle(@PathVariable Long id) {
         blogService.unWarnArticle(id);
         return ResponseEntity.ok().build();
     }
-
 }
