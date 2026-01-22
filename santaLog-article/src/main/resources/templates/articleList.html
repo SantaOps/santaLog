@@ -91,8 +91,6 @@
         .list-thumbnail img {
             width: 100%; height: 100%; object-fit: cover;
         }
-
-        /* [삭제됨] 경고 관련 CSS 클래스를 모두 제거했습니다. */
     </style>
 </head>
 <body>
@@ -138,7 +136,9 @@
                                  th:onclick="|location.href='@{/articles/{id}(id=${notice.id})}'|"
                                  style="cursor: pointer;">
                                 <div class="thumbnail-wrapper">
-                                    <img th:src="${notice.thumbnailUrl != null ? '/img/' + notice.thumbnailUrl : '/img/default.png'}"
+                                    <img th:src="${notice.thumbnailUrl != null ?
+                                                 (#strings.startsWith(notice.thumbnailUrl, 'http') ? notice.thumbnailUrl : '/img/' + notice.thumbnailUrl) :
+                                                 '/img/default.png'}"
                                          class="card-img-top" alt="thumbnail">
                                 </div>
                                 <div class="card-body">
@@ -182,7 +182,9 @@
 
             <div class="d-flex flex-row">
                 <div class="list-thumbnail">
-                    <img th:src="${item.thumbnailUrl != null ? '/img/' + item.thumbnailUrl : '/img/default.png'}" alt="thumbnail">
+                    <img th:src="${item.thumbnailUrl != null ?
+                                 (#strings.startsWith(item.thumbnailUrl, 'http') ? item.thumbnailUrl : '/img/' + item.thumbnailUrl) :
+                                 '/img/default.png'}" alt="thumbnail">
                 </div>
                 <div class="card-body">
                     <span th:if="${item.isWarned}" class="badge badge-warning text-dark mb-1">🚫 주의할 게시글</span>
