@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import santaOps.santaLog.domain.User;
-import santaOps.santaLog.repository.UserRepository;
+import santaOps.santaLog.repository.jpa.UserRepository;
 
 @RequiredArgsConstructor
 @Service

@@ -1,6 +1,7 @@
 package santaOps.santaLog.config.jwt;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,9 +18,6 @@ public class TokenProvider {
 
     private final JwtProperties jwtProperties;
 
-    // Article 서버에는 UserService가 필요 없음
-    // 토큰에 모든 정보(ID, Email, Role)가 들어있기에
-
     public boolean validToken(String token) {
         try {
             Jwts.parser()
@@ -34,18 +32,16 @@ public class TokenProvider {
     public Authentication getAuthentication(String token) {
         Claims claims = getClaims(token);
 
-        // DB를 조회하지 않고 토큰에 담긴 정보로 임시 User 객체 생성
-        String email = claims.getSubject();
-        Long id = claims.get("id", Long.class);
-        String roleName = claims.get("role", String.class);
+        // 1. 토큰 생성 시 넣었던 id와 role
+        String userId = String.valueOf(claims.get("id"));
+        String role = claims.get("role", String.class);
 
-        // Security 권한 설정
+        // 2. 권한 설정 (ROLE_을 붙여서 시큐리티 규격에 맞춤)
         Set<SimpleGrantedAuthority> authorities =
-                Collections.singleton(new SimpleGrantedAuthority("ROLE_" + roleName));
+                Collections.singleton(new SimpleGrantedAuthority("ROLE_" + role));
 
-        // 인증용 객체 생성 (principal에 이메일이나 간단한 User 객체를 담음)
         return new UsernamePasswordAuthenticationToken(
-                email,
+                userId,
                 token,
                 authorities
         );

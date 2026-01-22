@@ -43,6 +43,9 @@ subprojects {
         testAnnotationProcessor 'org.projectlombok:lombok'
         testImplementation 'org.projectlombok:lombok'
 
+        implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+        implementation 'com.fasterxml.jackson.core:jackson-databind'
+
         // Test & Runtime
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
         testImplementation 'org.springframework.security:spring-security-test'

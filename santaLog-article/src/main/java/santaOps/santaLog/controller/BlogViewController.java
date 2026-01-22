@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import santaOps.santaLog.domain.Article;
 import santaOps.santaLog.dto.ArticleResponse;
 import santaOps.santaLog.dto.ArticleViewResponse;
+import santaOps.santaLog.dto.UserCacheDto;
 import santaOps.santaLog.service.BlogService;
 
 import java.util.ArrayList;
@@ -56,21 +57,23 @@ public class BlogViewController {
         Article article = blogService.findById(id);
         model.addAttribute("article", new ArticleViewResponse(article));
 
+        Long currentUserId = blogService.getCurrentUserId();
+        UserCacheDto userCache = blogService.getUserCacheWithLookAside(currentUserId);
+        model.addAttribute("currentUser", userCache);
+
         return "article";
     }
 
     @GetMapping("/new-article")
     public String newArticle(@RequestParam(required = false) Long id, Model model){
         if (id == null){
-            // 게시글의 id가 있으면 수정으로
             model.addAttribute("article", new ArticleViewResponse());
-        }else{
+        } else {
             Article article = blogService.findById(id);
             model.addAttribute("article", new ArticleViewResponse(article));
         }
 
-        return "newArticle.html";
-
+        return "newArticle";
     }
 
 }

@@ -12,7 +12,7 @@ import santaOps.santaLog.domain.Role;
 import santaOps.santaLog.domain.User;
 import santaOps.santaLog.dto.AddUserRequest;
 import santaOps.santaLog.dto.AdminLoginRequest;
-import santaOps.santaLog.repository.UserRepository;
+import santaOps.santaLog.repository.jpa.UserRepository;
 
 import java.time.Duration;
 

@@ -3,6 +3,7 @@ package santaOps.santaLog.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -11,7 +12,7 @@ import santaOps.santaLog.config.jwt.TokenProvider;
 import santaOps.santaLog.config.oauth.OAuth2AuthorizationRequestBasedOnCookieRepository;
 import santaOps.santaLog.config.oauth.OAuth2SuccessHandler;
 import santaOps.santaLog.config.oauth.OAuth2UserCustomService;
-import santaOps.santaLog.repository.RefreshTokenRepository;
+import santaOps.santaLog.repository.redis.RefreshTokenRepository;
 import santaOps.santaLog.service.RefreshTokenService;
 import santaOps.santaLog.service.UserService;
 
@@ -24,6 +25,7 @@ public class WebOAuthSecurityConfig {
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserService userService;
     private final RefreshTokenService refreshTokenService;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -79,7 +81,8 @@ public class WebOAuthSecurityConfig {
                 tokenProvider,
                 refreshTokenRepository,
                 oAuth2AuthorizationRequestBasedOnCookieRepository(),
-                userService
+                userService,
+                redisTemplate
         );
     }
 

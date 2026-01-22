@@ -18,8 +18,8 @@ import santaOps.santaLog.domain.RefreshToken;
 import santaOps.santaLog.domain.Role;
 import santaOps.santaLog.domain.User;
 import santaOps.santaLog.dto.CreateAccessTokenRequest;
-import santaOps.santaLog.repository.RefreshTokenRepository;
-import santaOps.santaLog.repository.UserRepository;
+import santaOps.santaLog.repository.redis.RefreshTokenRepository;
+import santaOps.santaLog.repository.jpa.UserRepository;
 
 import java.util.Map;
 
