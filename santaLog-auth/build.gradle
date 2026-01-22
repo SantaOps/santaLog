@@ -1,6 +1,4 @@
 dependencies {
-    // Auth 모듈 전용: Redis
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 }
 
 bootJar {

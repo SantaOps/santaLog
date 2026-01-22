@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import santaOps.santaLog.domain.RefreshToken;
-import santaOps.santaLog.repository.RefreshTokenRepository;
+import santaOps.santaLog.repository.redis.RefreshTokenRepository;
 
 @RequiredArgsConstructor
 @Service

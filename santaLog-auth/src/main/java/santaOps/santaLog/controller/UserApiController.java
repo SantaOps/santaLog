@@ -4,14 +4,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import santaOps.santaLog.config.jwt.TokenProvider;
+import santaOps.santaLog.domain.User;
 import santaOps.santaLog.dto.AddUserRequest;
+import santaOps.santaLog.dto.UserCacheDto;
 import santaOps.santaLog.service.RefreshTokenService;
 import santaOps.santaLog.service.UserService;
 import jakarta.servlet.http.Cookie;
@@ -73,6 +72,13 @@ public class UserApiController {
     @GetMapping("/users/count")
     public ResponseEntity<Long> getUserCount() {
         return ResponseEntity.ok(userService.countUsers());
+    }
+
+    @GetMapping("/user/{id}")
+    @ResponseBody
+    public UserCacheDto getUserInfo(@PathVariable Long id) {
+        User user = userService.findById(id);
+        return UserCacheDto.from(user);
     }
 
 }

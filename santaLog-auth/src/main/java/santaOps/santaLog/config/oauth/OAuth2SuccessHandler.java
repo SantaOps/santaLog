@@ -11,12 +11,14 @@ import org.springframework.web.util.UriComponentsBuilder;
 import santaOps.santaLog.config.jwt.TokenProvider;
 import santaOps.santaLog.domain.RefreshToken;
 import santaOps.santaLog.domain.User;
-import santaOps.santaLog.repository.RefreshTokenRepository;
+import santaOps.santaLog.repository.redis.RefreshTokenRepository;
 import santaOps.santaLog.service.UserService;
 import santaOps.santaLog.util.CookieUtil;
 
 import java.io.IOException;
 import java.time.Duration;
+import org.springframework.data.redis.core.RedisTemplate;
+import santaOps.santaLog.dto.UserCacheDto;
 
 @RequiredArgsConstructor
 @Component
@@ -25,6 +27,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     public static final String ACCESS_TOKEN_COOKIE_NAME = "ACCESS_TOKEN";
     public static final Duration REFRESH_TOKEN_DURATION = Duration.ofDays(14);
     public static final Duration ACCESS_TOKEN_DURATION = Duration.ofDays(1);
+    public static final Duration USER_CACHE_DURATION = Duration.ofHours(1); // 캐시 유지 시간
 
     // Article 서버(8081)의 게시글 목록 주소로 지정
     public static final String REDIRECT_PATH = "http://localhost:8081/articles";
@@ -33,6 +36,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final RefreshTokenRepository refreshTokenRepository;
     private final OAuth2AuthorizationRequestBasedOnCookieRepository authorizationRequestRepository;
     private final UserService userService;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
@@ -43,6 +47,10 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String refreshToken = tokenProvider.generateToken(user, REFRESH_TOKEN_DURATION);
         saveRefreshToken(user.getId(), user.getUsername(),refreshToken);
         addRefreshTokenToCookie(request, response, refreshToken);
+
+        // 유저 정보 Redis 캐싱
+        // Article 서버가 DB 안 거치고 바로 권한을 확인할 수 있게 "USER:ID" 키로 저장
+        saveUserCache(user);
 
         // 2. 액세스 토큰 생성 -> 쿠키에 저장
         // 도메인(localhost)이 같으면 8080에서 구운 쿠키를 8081로 전송
@@ -57,6 +65,12 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         // 4. 브라우저를 Article 서버(8081)로 이동시킴
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
+    }
+
+    private void saveUserCache(User user) {
+        String cacheKey = "USER:" + user.getId();
+        UserCacheDto userCacheDto = UserCacheDto.from(user);
+        redisTemplate.opsForValue().set(cacheKey, userCacheDto, USER_CACHE_DURATION);
     }
 
     private void saveRefreshToken(Long userId, String username, String newRefreshToken) {

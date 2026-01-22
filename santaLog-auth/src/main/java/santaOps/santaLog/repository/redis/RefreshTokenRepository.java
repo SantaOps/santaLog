@@ -1,4 +1,4 @@
-package santaOps.santaLog.repository;
+package santaOps.santaLog.repository.redis;
 
 import org.springframework.data.repository.CrudRepository;
 import santaOps.santaLog.domain.RefreshToken;

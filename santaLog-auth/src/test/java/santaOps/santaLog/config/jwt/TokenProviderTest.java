@@ -10,7 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import santaOps.santaLog.config.oauth.OAuth2SuccessHandler;
 import santaOps.santaLog.domain.Role;
 import santaOps.santaLog.domain.User;
-import santaOps.santaLog.repository.UserRepository;
+import santaOps.santaLog.repository.jpa.UserRepository;
 
 import java.time.Duration;
 import java.util.Date;

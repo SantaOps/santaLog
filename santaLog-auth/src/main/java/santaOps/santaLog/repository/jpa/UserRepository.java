@@ -1,4 +1,4 @@
-package santaOps.santaLog.repository;
+package santaOps.santaLog.repository.jpa;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import santaOps.santaLog.domain.User;
