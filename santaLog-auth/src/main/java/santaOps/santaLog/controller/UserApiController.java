@@ -66,7 +66,8 @@ public class UserApiController {
         refreshCookie.setMaxAge(0);
         response.addCookie(refreshCookie);
 
-        return "redirect:http://localhost:8080/login";
+        return "redirect:/login";
+
     }
 
     @GetMapping("/users/count")

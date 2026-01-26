@@ -23,13 +23,19 @@ public class CookieUtil {
         return Optional.empty();
     }
 
-    public static void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
+    public static void addCookie(HttpServletResponse response,
+                                 String name,
+                                 String value,
+                                 int maxAge) {
+
         Cookie cookie = new Cookie(name, value);
         cookie.setPath("/");
-        cookie.setHttpOnly(true); // 자바스크립트 접근 차단
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);                // HTTPS
+        cookie.setDomain("www.santalog.cloud"); // 도메인 통합
         cookie.setMaxAge(maxAge);
-        response.addCookie(cookie);
 
+        response.addCookie(cookie);
     }
 
     public static void deleteCookie(HttpServletRequest request, HttpServletResponse response, String name) {

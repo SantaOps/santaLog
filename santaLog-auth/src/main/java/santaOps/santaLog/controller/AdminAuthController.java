@@ -54,7 +54,8 @@ public class AdminAuthController {
         SecurityContextHolder.getContext().setAuthentication(tokenProvider.getAuthentication(token));
 
         // 4. 게시글 서비스(8081)로 리다이렉트
-        return "redirect:http://localhost:8081/articles";
+        return "redirect:/articles";
+
     }
 
 

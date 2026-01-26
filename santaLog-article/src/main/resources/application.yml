@@ -65,3 +65,7 @@ spring:
 jwt:
   issuer: ${JWT_ISSUER}
   secret_key: ${JWT_SECRET_KEY}
+
+auth:
+  service:
+    url: http://santalog.cloud/auth
