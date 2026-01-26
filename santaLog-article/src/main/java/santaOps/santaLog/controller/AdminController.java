@@ -1,6 +1,7 @@
 package santaOps.santaLog.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,12 +16,14 @@ public class AdminController {
 
     private final BlogService blogService;
     private final RestTemplate restTemplate; // 주입받기
+    @Value("${auth.service.url}")
+    private String authServiceUrl;
 
     @GetMapping("/stats")
     public String showStatistics(Model model) {
         model.addAttribute("totalArticles", blogService.countArticles());
         try {
-            String authUrl = "http://localhost:8080/users/count";
+            String authUrl = authServiceUrl + "/users/count";
             Long userCount = restTemplate.getForObject(authUrl, Long.class);
             model.addAttribute("totalUsers", userCount != null ? userCount : 0);
         } catch (Exception e) {
