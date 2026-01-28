@@ -46,6 +46,7 @@ public class BlogViewController {
         }
 
         // 3. 모델에 담기
+        model.addAttribute("IMG_PATH", System.getenv("IMG_PATH"));
         model.addAttribute("noticeChunks", noticeChunks); // 3개씩 묶인 공지
         model.addAttribute("articles", regularArticles);  // 나머지 일반 글
 
@@ -60,6 +61,7 @@ public class BlogViewController {
         Long currentUserId = blogService.getCurrentUserId();
         UserCacheDto userCache = blogService.getUserCacheWithLookAside(currentUserId);
         model.addAttribute("currentUser", userCache);
+        model.addAttribute("IMG_PATH", System.getenv("IMG_PATH"));
 
         return "article";
     }

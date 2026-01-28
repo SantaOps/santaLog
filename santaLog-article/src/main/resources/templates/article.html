@@ -8,7 +8,7 @@
     <style>
         .content-area {
             line-height: 1.8;
-            word-break: break-all;
+            word-break: break-word;
         }
 
         .content-box {
@@ -29,7 +29,7 @@
 <div class="p-5 mb-5 bg-light">
     <div class="d-flex align-items-center">
         <a href="/articles" class="mr-4">
-            <img src="/img/logo.png" alt="SantaLog Logo" style="max-height: 80px; width: auto;">
+            <img th:src="${IMG_PATH + 'logo.png'}" alt="SantaLog Logo" style="max-height: 80px; width: auto;">
         </a>
         <div>
             <h1 class="mb-1 font-weight-bold">
@@ -49,9 +49,9 @@
 
                 <figure class="mb-4 text-center">
                     <img class="img-fluid rounded"
-                         th:src="${article.thumbnailUrl != null ?
-                 (#strings.startsWith(article.thumbnailUrl, 'http') ? article.thumbnailUrl : '/img/' + article.thumbnailUrl) :
-                 '/img/default.png'}"
+                         th:src="${article.thumbnailUrl != null} ?
+                                   (#strings.startsWith(article.thumbnailUrl, 'http') ? article.thumbnailUrl : IMG_PATH + article.thumbnailUrl) :
+                                   IMG_PATH + 'default.png'"
                          alt="thumbnail"
                          style="width: 100%; max-height: 400px; object-fit: cover;">
                 </figure>
@@ -80,6 +80,7 @@
                     </button>
 
                     <div>
+                        <!-- 경고 버튼 -->
                         <button type="button"
                                 sec:authorize="hasRole('ADMIN')"
                                 th:if="${!article.isWarned and !article.isNotice}"
@@ -96,14 +97,21 @@
                             🙆 경고 취소
                         </button>
 
-                        <button type="button" id="modify-btn"
-                                th:if="${currentUser != null} and (${currentUser.role == 'ADMIN'} or ${article.author == currentUser.email})"
-                                th:onclick="|location.href='@{/new-article?id={articleId}(articleId=${article.id})}'|"
-                                class="btn btn-primary btn-sm mr-1">수정</button>
+                        <!-- 수정 버튼 -->
+                        <button type="button"
+                                th:if="${currentUser != null} and (currentUser.role == 'ADMIN' or article.author == currentUser.email)"
+                                th:onclick="|location.href='/new-article?id=' + ${article.id}|"
+                                class="btn btn-primary btn-sm mr-1">
+                            수정
+                        </button>
 
-                        <button type="button" id="delete-btn"
-                                th:if="${currentUser != null} and (${currentUser.role == 'ADMIN'} or ${article.author == currentUser.email})"
-                                class="btn btn-danger btn-sm">삭제</button>
+                        <!-- 삭제 버튼 -->
+                        <button type="button"
+                                th:if="${currentUser != null} and (currentUser.role == 'ADMIN' or article.author == currentUser.email)"
+                                class="btn btn-danger btn-sm"
+                                onclick="deleteArticle()">
+                            삭제
+                        </button>
                     </div>
                 </div>
             </article>
@@ -112,40 +120,50 @@
 </div>
 
 <script src="/js/article.js"></script>
-
 <script>
     function warnArticle() {
-        if (!confirm("정말 이 게시글에 경고를 주시겠습니까?")) {
-            return;
-        }
+        if (!confirm("정말 이 게시글에 경고를 주시겠습니까?")) return;
         const id = document.getElementById('article-id').value;
         fetch(`/api/articles/${id}/warn`, { method: 'PUT' })
-        .then(response => {
-            if (response.ok) {
-                alert("경고 처리가 완료되었습니다.");
-                location.reload();
-            } else {
-                alert("경고 처리에 실패했습니다.");
-            }
-        })
-        .catch(error => console.error('Error:', error));
+            .then(response => {
+                if (response.ok) {
+                    alert("경고 처리가 완료되었습니다.");
+                    location.reload();
+                } else {
+                    alert("경고 처리에 실패했습니다.");
+                }
+            })
+            .catch(error => console.error('Error:', error));
     }
 
     function unWarnArticle() {
-        if (!confirm("이 게시글의 경고 상태를 해제하시겠습니까?")) {
-            return;
-        }
+        if (!confirm("이 게시글의 경고 상태를 해제하시겠습니까?")) return;
         const id = document.getElementById('article-id').value;
         fetch(`/api/articles/${id}/warn`, { method: 'DELETE' })
-        .then(response => {
-            if (response.ok) {
-                alert("경고가 취소되었습니다.");
-                location.reload();
-            } else {
-                alert("처리 실패");
-            }
-        })
-        .catch(error => console.error('Error:', error));
+            .then(response => {
+                if (response.ok) {
+                    alert("경고가 취소되었습니다.");
+                    location.reload();
+                } else {
+                    alert("처리 실패");
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function deleteArticle() {
+        if (!confirm("정말 이 게시글을 삭제하시겠습니까?")) return;
+        const id = document.getElementById('article-id').value;
+        fetch(`/api/articles/${id}`, { method: 'DELETE' })
+            .then(response => {
+                if (response.ok) {
+                    alert("삭제되었습니다.");
+                    location.href = '/articles';
+                } else {
+                    alert("삭제 실패");
+                }
+            })
+            .catch(error => console.error('Error:', error));
     }
 </script>
 </body>

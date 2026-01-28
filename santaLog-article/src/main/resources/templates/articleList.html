@@ -8,102 +8,31 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
     <style>
-        /* 썸네일 공통 스타일 */
-        .thumbnail-wrapper {
-            width: 100%;
-            height: 180px;
-            overflow: hidden;
-        }
-        .thumbnail-wrapper img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-        }
-
-        /* 카드 호버 효과 */
-        .card:hover .thumbnail-wrapper img {
-            transform: scale(1.05);
-        }
-        .card:hover {
-            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-            transform: translateY(-5px);
-            transition: all 0.3s ease;
-        }
-
-        /* 공지사항 배너 영역 */
-        .notice-banner-section {
-            background: linear-gradient(to bottom, #8b0000 0%, rgba(255, 255, 255, 0) 60%);
-            padding: 40px 0 60px 0;
-            margin-bottom: 20px;
-            border-radius: 0 0 30px 30px;
-            position: relative;
-        }
-
-        /* 섹션 타이틀 */
-        .section-title {
-            color: #ffffff;
-            margin-bottom: 30px;
-            font-weight: 800;
-            border-left: 6px solid #ff4d4d;
-            padding-left: 15px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-        }
-
-        /* 공지사항 카드 */
-        .notice-card {
-            border-radius: 20px !important;
-            overflow: hidden;
-            border: none;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
-        }
-
-        /* 화살표 버튼 */
-        .carousel-control-prev, .carousel-control-next {
-            width: 45px;
-            height: 45px;
-            background-color: #000000;
-            border-radius: 50%;
-            top: 50%;
-            transform: translateY(-50%);
-            opacity: 0.8;
-            z-index: 10;
-            color: #fff;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            transition: all 0.3s ease;
-        }
+        .thumbnail-wrapper { width: 100%; height: 180px; overflow: hidden; }
+        .thumbnail-wrapper img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
+        .card:hover .thumbnail-wrapper img { transform: scale(1.05); }
+        .card:hover { box-shadow: 0 10px 20px rgba(0,0,0,0.15); transform: translateY(-5px); transition: all 0.3s ease; }
+        .notice-banner-section { background: linear-gradient(to bottom, #8b0000 0%, rgba(255,255,255,0) 60%); padding: 40px 0 60px 0; margin-bottom: 20px; border-radius: 0 0 30px 30px; position: relative; }
+        .section-title { color: #fff; margin-bottom: 30px; font-weight: 800; border-left: 6px solid #ff4d4d; padding-left: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .notice-card { border-radius: 20px !important; overflow: hidden; border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important; }
+        .carousel-control-prev, .carousel-control-next { width: 45px; height: 45px; background-color: #000; border-radius: 50%; top: 50%; transform: translateY(-50%); opacity: 0.8; z-index: 10; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: all 0.3s ease; }
         .carousel-control-prev { left: -25px; }
         .carousel-control-next { right: -25px; }
-
-        .carousel-control-prev:hover, .carousel-control-next:hover {
-            background-color: #333;
-            opacity: 1;
-            transform: translateY(-50%) scale(1.1);
-        }
-
-        /* 일반 리스트 스타일 */
-        .list-thumbnail {
-            width: 200px;
-            height: 150px;
-            overflow: hidden;
-            flex-shrink: 0;
-        }
-        .list-thumbnail img {
-            width: 100%; height: 100%; object-fit: cover;
-        }
+        .carousel-control-prev:hover, .carousel-control-next:hover { background-color: #333; opacity: 1; transform: translateY(-50%) scale(1.1); }
+        .list-thumbnail { width: 200px; height: 150px; overflow: hidden; flex-shrink: 0; }
+        .list-thumbnail img { width: 100%; height: 100%; object-fit: cover; }
     </style>
 </head>
 <body>
-
 <div class="bg-white border-bottom shadow-sm">
     <div class="container p-3 d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center">
             <a href="/articles" class="mr-3">
-                <img src="/img/logo.png" alt="Logo" style="height: 50px;">
+                <img th:src="${IMG_PATH + 'logo.png'}" alt="Logo" style="height: 50px;">
             </a>
             <h1 class="mb-1 font-weight-bold">
                 SantaLog
-                <span sec:authorize="hasRole('ADMIN')" style="font-size: 0.6em; ">- 관리자 페이지</span>
+                <span sec:authorize="hasRole('ADMIN')" style="font-size: 0.6em;">- 관리자 페이지</span>
             </h1>
         </div>
         <div class="d-flex align-items-center">
@@ -113,7 +42,6 @@
                     onclick="location.href='/admin/stats'">
                 <i class="fas fa-chart-bar"></i> 통계 확인
             </button>
-
             <button type="button" class="btn btn-outline-danger btn-sm" onclick="location.href='http://localhost:8080/logout'">
                 <i class="fas fa-sign-out-alt"></i> 로그아웃
             </button>
@@ -121,6 +49,7 @@
     </div>
 </div>
 
+<!-- 공지사항 배너 -->
 <div class="notice-banner-section" th:if="${!noticeChunks.isEmpty()}">
     <div class="container position-relative">
         <h4 class="section-title">📢 주요 공지사항</h4>
@@ -133,12 +62,12 @@
                     <div class="row">
                         <div class="col-md-4" th:each="notice : ${chunk}">
                             <div class="card h-100 notice-card"
-                                 th:onclick="|location.href='@{/articles/{id}(id=${notice.id})}'|"
+                                 th:onclick="|location.href='/articles/' + ${notice.id}|"
                                  style="cursor: pointer;">
                                 <div class="thumbnail-wrapper">
-                                    <img th:src="${notice.thumbnailUrl != null ?
-                                                 (#strings.startsWith(notice.thumbnailUrl, 'http') ? notice.thumbnailUrl : '/img/' + notice.thumbnailUrl) :
-                                                 '/img/default.png'}"
+                                    <img th:src="${notice.thumbnailUrl != null} ?
+                                                 (${#strings.startsWith(notice.thumbnailUrl, 'http')} ? notice.thumbnailUrl : IMG_PATH + notice.thumbnailUrl)
+                                                 : IMG_PATH + 'default.png'"
                                          class="card-img-top" alt="thumbnail">
                                 </div>
                                 <div class="card-body">
@@ -163,13 +92,14 @@
     </div>
 </div>
 
+<!-- 최신 글 -->
 <div class="container" style="margin-top: 80px;">
     <div class="d-flex justify-content-between align-items-end mb-4">
         <h4 class="font-weight-bold mb-0" style="color: #333; border-left: 5px solid #8b0000; padding-left: 15px; line-height: 1;">
             최신 글 <span style="font-size: 0.6em; color: #888; font-weight: normal; margin-left: 10px;">New Articles</span>
         </h4>
 
-        <button type="button" id="create-btn" th:onclick="|location.href='@{/new-article}'|" class="btn btn-danger btn-sm shadow-sm">
+        <button type="button" id="create-btn" th:onclick="|location.href='/new-article'|" class="btn btn-danger btn-sm shadow-sm">
             <i class="fas fa-pen"></i> 글 쓰기
         </button>
     </div>
@@ -177,18 +107,16 @@
     <div class="list-group">
         <div th:each="item : ${articles}"
              class="card mb-3 shadow-sm"
-             th:onclick="|location.href='@{/articles/{id}(id=${item.id})}'|"
+             th:onclick="|location.href='/articles/' + ${item.id}|"
              style="cursor: pointer; transition: 0.2s;">
-
             <div class="d-flex flex-row">
                 <div class="list-thumbnail">
-                    <img th:src="${item.thumbnailUrl != null ?
-                                 (#strings.startsWith(item.thumbnailUrl, 'http') ? item.thumbnailUrl : '/img/' + item.thumbnailUrl) :
-                                 '/img/default.png'}" alt="thumbnail">
+                    <img th:src="${item.thumbnailUrl != null} ?
+                                 (${#strings.startsWith(item.thumbnailUrl, 'http')} ? item.thumbnailUrl : IMG_PATH + item.thumbnailUrl)
+                                 : IMG_PATH + 'default.png'" alt="thumbnail">
                 </div>
                 <div class="card-body">
                     <span th:if="${item.isWarned}" class="badge badge-warning text-dark mb-1">🚫 주의할 게시글</span>
-
                     <h5 class="card-title font-weight-bold" th:text="${item.title}"></h5>
                     <p class="card-text text-muted" th:text="${item.content}"
                        style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
@@ -197,7 +125,6 @@
             </div>
         </div>
     </div>
-
 </div>
 
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>

@@ -42,6 +42,7 @@ spring:
           - ${REDIS_NODE1}
           - ${REDIS_NODE2}
           - ${REDIS_NODE3}
+          - ${REDIS_NODE4}
 
   jpa:
     show-sql: true
