@@ -48,6 +48,7 @@ spring:
           - ${REDIS_NODE1}
           - ${REDIS_NODE2}
           - ${REDIS_NODE3}
+          - ${REDIS_NODE4}
       lettuce:
         pool:
           max-active: 10      # 동시에 사용할 수 있는 최대 커넥션 수
