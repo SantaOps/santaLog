@@ -50,3 +50,33 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/santa-article:${{ github.sha }}
             ${{ secrets.DOCKERHUB_USERNAME }}/santa-article:latest
+
+# -------------------------------------------------------------- 
+# 아래부터 CD (k8s)
+
+      # 7️⃣ Kubernetes 클러스터에 배포
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: '1.30.0' # 원하는 kubectl 버전
+
+      - name: Set up Kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBECONFIG_CONTENT }}" > $HOME/.kube/config
+
+      - name: Deploy Article to Kubernetes
+        run: |
+          # ConfigMap/Secret 먼저 적용
+          kubectl apply -f k8s/configmaps/article-configmap.yaml
+          kubectl apply -f k8s/secrets/article-secret.yaml
+
+          # Deployment, Service 적용
+          kubectl apply -f k8s/deployments/article-deploy.yaml
+          kubectl apply -f k8s/services/article-service.yaml
+
+          # 이미지 최신 반영 (선택 사항)
+          kubectl set image deployment/santa-article \
+            article-container=${{ secrets.DOCKERHUB_USERNAME }}/santa-article:${{ github.sha }}
+
+
