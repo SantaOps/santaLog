@@ -1,32 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: santa-auth
+  namespace: santalog-auth  # 네임스페이스 명시 확인
 spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: santa-auth
   template:
+    metadata:
+      labels:
+        app: santa-auth
     spec:
       containers:
         - name: auth-container
           image: santalog/santa-auth:latest
           ports:
             - containerPort: 8080
-          # --- 아래 내용을 추가/수정 하세요 ---
+          # [추가 1] 앱 구동 대기 시간을 위한 헬스체크 설정
+          # Actuator가 없을 경우를 대비해 가장 기본 경로인 / 사용
           livenessProbe:
             httpGet:
-              path: /actuator/health # Actuator가 없다면 / (루트) 또는 로그인 경로
+              path: /
               port: 8080
-            initialDelaySeconds: 60  # 앱 구동 시간을 벌어줍니다 (중요!)
-            periodSeconds: 15
+            initialDelaySeconds: 120 # 앱이 완전히 뜨기까지 2분간 기다림 (DB 연결 시간 고려)
+            periodSeconds: 20        # 이후 20초마다 체크
+            failureThreshold: 5      # 5번 연속 실패 시에만 재시작
           readinessProbe:
             httpGet:
-              path: /actuator/health
+              path: /
               port: 8080
-            initialDelaySeconds: 30
+            initialDelaySeconds: 40  # 40초 후부터 트래픽 투입 준비 확인
             periodSeconds: 10
+          # [추가 2] 자원 할당 (앱이 죽지 않게 최소 사양 보장)
           resources:
             requests:
               memory: "512Mi"
-              cpu: "250m"
+              cpu: "200m"
             limits:
               memory: "1Gi"
               cpu: "500m"
-          # ------------------------------
           envFrom:
             - configMapRef:
                 name: auth-config
