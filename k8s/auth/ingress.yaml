@@ -2,18 +2,21 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: santalog-auth-ingress
+  namespace: santalog-auth
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/use-regex: "true"
 spec:
   ingressClassName: nginx
   rules:
     - host: santalog.cloud
       http:
         paths:
-          - path: /auth
-            pathType: Prefix
+          # (.*)을 통해 / 뒤에 오는 모든 경로(예: /login)를 캡처하여 전달합니다.
+          - path: /(.*)
+            pathType: ImplementationSpecific
             backend:
               service:
-                name: auth-service
+                name: santa-auth
                 port:
                   number: 80
