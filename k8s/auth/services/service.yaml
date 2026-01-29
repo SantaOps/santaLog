@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: auth-service
 spec:
-  type: LoadBalancer
+  type: ClusterIP # Ingress를 사용하므로 내부 포트만 열어도 충분합니다.
   selector:
     app: santa-auth
   ports:
