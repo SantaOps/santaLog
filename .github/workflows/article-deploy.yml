@@ -35,14 +35,14 @@ jobs:
       - name: Build article jar
         run: ./gradlew :santaLog-article:bootJar
 
-      # 5️⃣ Docker Hub 로그인 (TOKEN)
+      # 5️⃣ Docker Hub 로그인
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
-      # 6️⃣ Docker image 빌드 & push (Commit SHA 태그)
+      # 6️⃣ Docker image 빌드 & push
       - name: Build and push article image
         uses: docker/build-push-action@v5
         with:
@@ -53,32 +53,38 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/santa-article:${{ github.sha }}
             ${{ secrets.DOCKERHUB_USERNAME }}/santa-article:latest
 
-# -------------------------------------------------------------- 
-# 아래부터 CD (k8s)
+      # --------------------------------------------------------------
+      # 아래부터 CD (k8s)
 
-      # 7️⃣ Kubernetes 클러스터에 배포
+      # 7️⃣ kubectl 설정 (안정 버전)
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
         with:
-          version: '1.30.0' # 원하는 kubectl 버전
+          version: '1.29.4'
 
       - name: Set up Kubeconfig
         run: |
           mkdir -p $HOME/.kube
           echo "${{ secrets.KUBECONFIG_CONTENT }}" > $HOME/.kube/config
 
+      # 8️⃣ Kubernetes Secret 생성/갱신 (GitHub Secrets → K8s)
+      - name: Create or Update Article Secret
+        run: |
+          kubectl create secret generic article-secret \
+            --from-literal=JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY }}" \
+            --from-literal=REDIS_PASSWORD="${{ secrets.REDIS_PASSWORD }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      # 9️⃣ ConfigMap 적용
+      - name: Apply Article ConfigMap
+        run: |
+          kubectl apply -f k8s/configmaps/article-configmap.yaml
+
+      # 🔟 Deployment / Service 배포
       - name: Deploy Article to Kubernetes
         run: |
-          # ConfigMap/Secret 먼저 적용
-          kubectl apply -f k8s/configmaps/article-configmap.yaml
-          kubectl apply -f k8s/secrets/article-secret.yaml
-
-          # Deployment, Service 적용
           kubectl apply -f k8s/deployments/article-deploy.yaml
           kubectl apply -f k8s/services/article-service.yaml
 
-          # 이미지 최신 반영 (선택 사항)
           kubectl set image deployment/santa-article \
             article-container=${{ secrets.DOCKERHUB_USERNAME }}/santa-article:${{ github.sha }}
-
-
