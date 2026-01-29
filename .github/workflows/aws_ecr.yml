@@ -1,0 +1,37 @@
+name: Push Auth Image to ECR
+
+on:
+  push:
+    branches:
+      - temp-test-branch   # 메인 말고 테스트용 브랜치
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 코드 체크아웃
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      # AWS 계정 인증
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      # AWS ECR 로그인
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+
+      # Docker 이미지 빌드 및 ECR 푸시
+      - name: Build and push auth image to ECR
+        uses: docker/build-push-action@v5
+        with:
+          context: santaLog-auth
+          file: santaLog-auth/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/santa-auth:latest
