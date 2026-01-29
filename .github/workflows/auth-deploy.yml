@@ -42,7 +42,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
-      # 6️⃣ Docker image 빌드 & push (Commit SHA 태그)
+      # 6️⃣ Docker image 빌드 & push
       - name: Build and push auth image
         uses: docker/build-push-action@v5
         with:
@@ -53,20 +53,22 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/santa-auth:${{ github.sha }}
             ${{ secrets.DOCKERHUB_USERNAME }}/santa-auth:latest
 
-# ---------------------------------------------------------------------------------------- 아래부터 CD (k8s)
+      # ------------------------------------------------------------------
+      # 아래부터 CD (k8s)
 
-      # 7️⃣ kubectl 설정
+      # 7️⃣ kubectl 설정 (⚠️ 1.30.0 ❌ → 1.29.4 ⭕)
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
         with:
-          version: '1.30.0'
+          version: '1.29.4'
 
+      # 8️⃣ kubeconfig 설정
       - name: Set up Kubeconfig
         run: |
           mkdir -p $HOME/.kube
           echo "${{ secrets.KUBECONFIG_CONTENT }}" > $HOME/.kube/config
 
-      # 8️⃣ Kubernetes Secret 생성/갱신 (GitHub Secrets → K8s)
+      # 9️⃣ Kubernetes Secret 생성/갱신
       - name: Create or Update Auth Secret
         run: |
           kubectl create secret generic auth-secret \
@@ -77,18 +79,16 @@ jobs:
             --from-literal=GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
             --dry-run=client -o yaml | kubectl apply -f -
 
-      # 9️⃣ ConfigMap 적용
+      # 🔟 ConfigMap 적용
       - name: Apply Auth ConfigMap
         run: |
           kubectl apply -f k8s/configmaps/auth-configmap.yaml
 
-      # 🔟 Deployment / Service 배포
+      # 1️⃣1️⃣ Deployment / Service 배포
       - name: Deploy Auth to Kubernetes
         run: |
           kubectl apply -f k8s/deployments/auth-deploy.yaml
           kubectl apply -f k8s/services/auth-service.yaml
 
-          # 이미지 최신 반영 (Commit SHA 기준)
           kubectl set image deployment/santa-auth \
             auth-container=${{ secrets.DOCKERHUB_USERNAME }}/santa-auth:${{ github.sha }}
-
