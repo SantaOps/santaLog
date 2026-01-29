@@ -46,33 +46,3 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/santa-auth:${{ github.sha }}
             ${{ secrets.DOCKERHUB_USERNAME }}/santa-auth:latest
-
-      # ---------------- CD ----------------
-
-      - name: Set up kubectl
-        uses: azure/setup-kubectl@v3
-
-      - name: Set up Kubeconfig
-        run: |
-          mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBECONFIG_CONTENT }}" > $HOME/.kube/config
-
-      - name: Create or Update Auth Secret
-        run: |
-          kubectl create secret generic auth-secret \
-            --from-literal=AUTH_DB_PASSWORD="${{ secrets.AUTH_DB_PASSWORD }}" \
-            --from-literal=REDIS_PASSWORD="${{ secrets.REDIS_PASSWORD }}" \
-            --from-literal=JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY }}" \
-            --from-literal=GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}" \
-            --from-literal=GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
-            --dry-run=client -o yaml | kubectl apply -f -
-
-      - name: Apply Auth ConfigMap
-        run: kubectl apply -f k8s/configmaps/auth-configmap.yaml
-
-      - name: Deploy Auth to Kubernetes
-        run: |
-          kubectl apply -f k8s/deployments/auth-deploy.yaml
-          kubectl apply -f k8s/services/auth-service.yaml
-          kubectl set image deployment/santa-auth \
-            auth-container=${{ secrets.DOCKERHUB_USERNAME }}/santa-auth:${{ github.sha }}
