@@ -5,6 +5,8 @@ on:
     branches: [ "main" ]
     paths:
       - 'santaLog-article/**'
+      - 'k8s/**'
+      - '.github/workflows/**'
       - 'build.gradle'
       - 'settings.gradle'
       - 'gradle/**'
