@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: article-config
+data:
+  ARTICLE_DB_HOST: "192.168.60.250"
+  ARTICLE_DB_PORT: "6033"
+  ARTICLE_DB_USERNAME: "article_user"
+  REDIS_MASTER_NAME: "mymaster"
+  REDIS_NODE1: "192.168.60.131:26379"
+  REDIS_NODE2: "192.168.60.231:26379"
+  REDIS_NODE3: "192.168.40.131:26379"
+  REDIS_NODE4: "192.168.40.231:26379"
+  IMG_PATH: "https://santalog-s3.s3.ap-northeast-2.amazonaws.com/img/"
+  JWT_ISSUER: "santa-log-developer"

@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth-config
+data:
+  # Auth DB (K8s 내부 DNS 사용)
+  AUTH_DB_HOST: "authdb-mariadb-galera.auth-db.svc.cluster.local"
+  AUTH_DB_PORT: "3306"
+  AUTH_DB_NAME: "auth_db"
+  AUTH_DB_USERNAME: "app_user"
+
+  # Redis Sentinel
+  REDIS_MASTER_NAME: "mymaster"
+  REDIS_NODE1: "192.168.60.131:26379"
+  REDIS_NODE2: "192.168.60.231:26379"
+  REDIS_NODE3: "192.168.40.131:26379"
+  REDIS_NODE4: "192.168.40.231:26379"
+
+  # JWT
+  JWT_ISSUER: "santa-log-developer"
