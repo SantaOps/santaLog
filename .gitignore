@@ -48,3 +48,4 @@ bin/
 /santaLog-article/src/main/resources/static/img/
 /santaLog-article/src/main/resources/.env
 /santaLog-auth/src/main/resources/.env
+/k8s/secrets/
