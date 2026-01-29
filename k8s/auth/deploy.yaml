@@ -1,22 +1,32 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: santa-auth
 spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: santa-auth
   template:
-    metadata:
-      labels:
-        app: santa-auth
     spec:
       containers:
         - name: auth-container
           image: santalog/santa-auth:latest
           ports:
             - containerPort: 8080
+          # --- 아래 내용을 추가/수정 하세요 ---
+          livenessProbe:
+            httpGet:
+              path: /actuator/health # Actuator가 없다면 / (루트) 또는 로그인 경로
+              port: 8080
+            initialDelaySeconds: 60  # 앱 구동 시간을 벌어줍니다 (중요!)
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          # ------------------------------
           envFrom:
             - configMapRef:
                 name: auth-config
