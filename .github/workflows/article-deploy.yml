@@ -46,30 +46,3 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/santa-article:${{ github.sha }}
             ${{ secrets.DOCKERHUB_USERNAME }}/santa-article:latest
-
-      # ---------------- CD ----------------
-
-      - name: Set up kubectl
-        uses: azure/setup-kubectl@v3
-
-      - name: Set up Kubeconfig
-        run: |
-          mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBECONFIG_CONTENT }}" > $HOME/.kube/config
-
-      - name: Create or Update Article Secret
-        run: |
-          kubectl create secret generic article-secret \
-            --from-literal=JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY }}" \
-            --from-literal=REDIS_PASSWORD="${{ secrets.REDIS_PASSWORD }}" \
-            --dry-run=client -o yaml | kubectl apply -f -
-
-      - name: Apply Article ConfigMap
-        run: kubectl apply -f k8s/configmaps/article-configmap.yaml
-
-      - name: Deploy Article to Kubernetes
-        run: |
-          kubectl apply -f k8s/deployments/article-deploy.yaml
-          kubectl apply -f k8s/services/article-service.yaml
-          kubectl set image deployment/santa-article \
-            article-container=${{ secrets.DOCKERHUB_USERNAME }}/santa-article:${{ github.sha }}
