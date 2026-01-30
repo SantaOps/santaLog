@@ -8,11 +8,9 @@ metadata:
     # 서비스간 쿠키 공유를 위해 auth와 동일한 설정 유지
     nginx.ingress.kubernetes.io/proxy-cookie-domain: "article-service santalog.cloud"
     nginx.ingress.kubernetes.io/proxy-cookie-path: "/ /"
-    nginx.ingress.kubernetes.io/use-forwarded-headers: "true"
     nginx.ingress.kubernetes.io/configuration-snippet: |
-      proxy_set_header X-Forwarded-Host $host;
       proxy_set_header X-Forwarded-Port 31000;
-      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header X-Forwarded-Host $host;
 spec:
   rules:
     - host: santalog.cloud
