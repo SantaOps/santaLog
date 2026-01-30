@@ -26,7 +26,7 @@ public class BlogService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final RestTemplate restTemplate = new RestTemplate();
 
-    private static final String AUTH_SERVER_URL = "http://localhost:8080/user/";
+    private static final String AUTH_SERVER_URL = "http://santalog.cloud:31000/user/";
 
     public Article save(AddArticleRequest request, String userName) {
         if (Boolean.TRUE.equals(request.getIsNotice())) {

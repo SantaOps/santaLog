@@ -2,16 +2,42 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: santalog-article-ingress
+  namespace: santalog-article # 실제 article 서비스가 배포된 네임스페이스
   annotations:
-    kubernetes.io/ingress.class: "nginx"
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    kubernetes.io/ingress.class: nginx
+    # 서비스간 쿠키 공유를 위해 auth와 동일한 설정 유지
+    nginx.ingress.kubernetes.io/proxy-cookie-domain: "localhost santalog.cloud"
+    nginx.ingress.kubernetes.io/proxy-cookie-path: "/ /"
 spec:
-  ingressClassName: nginx
   rules:
     - host: santalog.cloud
       http:
         paths:
-          - path: /article
+          # 1. 게시글 뷰 관련 (BlogViewController)
+          - path: /articles
+            pathType: Prefix
+            backend:
+              service:
+                name: santa-article # 서비스 이름 확인 (kubectl get svc)
+                port:
+                  number: 80
+          - path: /new-article
+            pathType: Prefix
+            backend:
+              service:
+                name: santa-article
+                port:
+                  number: 80
+          # 2. 게시글 API 관련 (BlogApiController)
+          - path: /api/articles
+            pathType: Prefix
+            backend:
+              service:
+                name: santa-article
+                port:
+                  number: 80
+          # 3. 게시글 관리자 통계 (AdminController)
+          - path: /admin/stats
             pathType: Prefix
             backend:
               service:

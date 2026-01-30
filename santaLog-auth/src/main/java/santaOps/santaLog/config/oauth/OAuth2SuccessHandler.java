@@ -30,7 +30,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     public static final Duration USER_CACHE_DURATION = Duration.ofHours(1);
 
 
-    public static final String REDIRECT_PATH = "http://santalog.cloud/articles";
+    public static final String REDIRECT_PATH = "http://santalog.cloud:31000/articles";
 
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
