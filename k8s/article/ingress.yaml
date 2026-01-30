@@ -13,34 +13,31 @@ spec:
     - host: santalog.cloud
       http:
         paths:
-          # 1. 게시글 뷰 관련 (BlogViewController)
           - path: /articles
             pathType: Prefix
             backend:
               service:
-                name: santa-article # 서비스 이름 확인 (kubectl get svc)
+                name: article-service # santa-article -> article-service로 변경
                 port:
                   number: 80
           - path: /new-article
             pathType: Prefix
             backend:
               service:
-                name: santa-article
+                name: article-service # 변경
                 port:
                   number: 80
-          # 2. 게시글 API 관련 (BlogApiController)
           - path: /api/articles
             pathType: Prefix
             backend:
               service:
-                name: santa-article
+                name: article-service # 변경
                 port:
                   number: 80
-          # 3. 게시글 관리자 통계 (AdminController)
           - path: /admin/stats
             pathType: Prefix
             backend:
               service:
-                name: santa-article
+                name: article-service # 변경
                 port:
                   number: 80

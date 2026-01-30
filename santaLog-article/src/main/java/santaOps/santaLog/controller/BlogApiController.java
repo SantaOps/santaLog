@@ -18,7 +18,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/")
+@RequestMapping("/api")
 public class BlogApiController {
 
     private final BlogService blogService;
@@ -27,7 +27,7 @@ public class BlogApiController {
     /**
      * 글 등록 (POST)
      */
-    @PostMapping("articles")
+    @PostMapping("/articles")
     public ResponseEntity<Article> addArticle(
             @RequestParam("title") String title,
             @RequestParam("content") String content,
@@ -61,7 +61,7 @@ public class BlogApiController {
     /**
      * 글 목록 조회 (GET)
      */
-    @GetMapping("articles")
+    @GetMapping("/articles")
     public ResponseEntity<List<ArticleResponse>> findAllArticles(){
         List<ArticleResponse> articles = blogService.findAll()
                 .stream()
@@ -73,7 +73,7 @@ public class BlogApiController {
     /**
      * 글 단건 조회 (GET)
      */
-    @GetMapping("articles/{id}")
+    @GetMapping("/articles/{id}")
     public ResponseEntity<ArticleResponse> findArticle(@PathVariable long id){
         Article article = blogService.findById(id);
         return ResponseEntity.ok().body(new ArticleResponse(article));
@@ -82,7 +82,7 @@ public class BlogApiController {
     /**
      * 글 삭제 (DELETE)
      */
-    @DeleteMapping("articles/{id}")
+    @DeleteMapping("/articles/{id}")
     public ResponseEntity<Void> deleteArticle (@PathVariable long id){
         blogService.delete(id);
         return ResponseEntity.ok().build();
@@ -91,7 +91,7 @@ public class BlogApiController {
     /**
      * 글 수정 (PUT)
      */
-    @PutMapping("articles/{id}")
+    @PutMapping("/articles/{id}")
     public ResponseEntity<Article> updateArticle(
             @PathVariable long id,
             @RequestParam("title") String title,
@@ -120,7 +120,7 @@ public class BlogApiController {
     /**
      * 게시글 경고 주기 (PUT)
      */
-    @PutMapping("articles/{id}/warn")
+    @PutMapping("/articles/{id}/warn")
     public ResponseEntity<Void> warnArticle(@PathVariable Long id) {
         blogService.warnArticle(id);
         return ResponseEntity.ok().build();
@@ -129,7 +129,7 @@ public class BlogApiController {
     /**
      * 경고 취소 (DELETE)
      */
-    @DeleteMapping("articles/{id}/warn")
+    @DeleteMapping("/articles/{id}/warn")
     public ResponseEntity<Void> unWarnArticle(@PathVariable Long id) {
         blogService.unWarnArticle(id);
         return ResponseEntity.ok().build();
