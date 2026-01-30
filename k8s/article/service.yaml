@@ -3,9 +3,10 @@ kind: Service
 metadata:
   name: article-service
 spec:
-  type: LoadBalancer
+  type: NodePort
   selector:
     app: santa-article
   ports:
-    - port: 80
-      targetPort: 8081
+    - port: 80         # Cluster 내부용 포트
+      targetPort: 8081 # Pod 포트
+      nodePort: 30081  # VIP/외부 접근용 NodePort

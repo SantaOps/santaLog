@@ -2,10 +2,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: auth-service
+  namespace: santalog-auth
 spec:
-  type: ClusterIP # Ingress를 사용하므로 내부 포트만 열어도 충분합니다.
+  type: NodePort
   selector:
     app: santa-auth
   ports:
-    - port: 80
-      targetPort: 8080
+    - port: 80         # Cluster 내부용 포트
+      targetPort: 8080 # Pod 포트
+      nodePort: 30080  # VIP / 외부 접근용 NodePort
