@@ -27,10 +27,10 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     public static final String ACCESS_TOKEN_COOKIE_NAME = "ACCESS_TOKEN";
     public static final Duration REFRESH_TOKEN_DURATION = Duration.ofDays(14);
     public static final Duration ACCESS_TOKEN_DURATION = Duration.ofDays(1);
-    public static final Duration USER_CACHE_DURATION = Duration.ofHours(1); // 캐시 유지 시간
+    public static final Duration USER_CACHE_DURATION = Duration.ofHours(1);
 
-    // Article 서버(8081)의 게시글 목록 주소로 지정
-    public static final String REDIRECT_PATH = "http://localhost:8081/articles";
+
+    public static final String REDIRECT_PATH = "http://santalog.cloud/articles";
 
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
@@ -43,27 +43,22 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         User user = userService.findByEmail((String) oAuth2User.getAttributes().get("email"));
 
-        // 1. 리프레시 토큰 생성 및 저장 -> 쿠키에 저장
+        // 1. 토큰 생성 및 저장
         String refreshToken = tokenProvider.generateToken(user, REFRESH_TOKEN_DURATION);
-        saveRefreshToken(user.getId(), user.getUsername(),refreshToken);
+        saveRefreshToken(user.getId(), user.getUsername(), refreshToken);
         addRefreshTokenToCookie(request, response, refreshToken);
 
-        // 유저 정보 Redis 캐싱
-        // Article 서버가 DB 안 거치고 바로 권한을 확인할 수 있게 "USER:ID" 키로 저장
+        // Redis 캐싱
         saveUserCache(user);
 
-        // 2. 액세스 토큰 생성 -> 쿠키에 저장
-        // 도메인(localhost)이 같으면 8080에서 구운 쿠키를 8081로 전송
+        // 2. 액세스 토큰 쿠키 저장
         String accessToken = tokenProvider.generateToken(user, ACCESS_TOKEN_DURATION);
         addAccessTokenToCookie(response, accessToken);
 
-        // 3. 리다이렉트 경로 설정 (http://localhost:8081/articles)
+        // 3. 리다이렉트 실행
         String targetUrl = getTargetUrl();
-
-        // 인증 관련 설정값들 정리
         clearAuthenticationAttributes(request, response);
 
-        // 4. 브라우저를 Article 서버(8081)로 이동시킴
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 
@@ -75,9 +70,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     private void saveRefreshToken(Long userId, String username, String newRefreshToken) {
         RefreshToken refreshToken = refreshTokenRepository.findById(userId)
-                .map(entity -> entity.update(newRefreshToken, username)) // 업데이트 시 이름도 갱신
-                .orElse(new RefreshToken(userId, newRefreshToken, username)); // 새로 저장
-
+                .map(entity -> entity.update(newRefreshToken, username))
+                .orElse(new RefreshToken(userId, newRefreshToken, username));
         refreshTokenRepository.save(refreshToken);
     }
 

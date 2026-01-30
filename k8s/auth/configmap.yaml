@@ -4,7 +4,7 @@ metadata:
   name: auth-config
   namespace: santalog-auth
 data:
-  SPRING_DATASOURCE_URL: jdbc:mariadb://authdb-mariadb-galera.auth-db.svc.cluster.local:3306/auth_db?connectTimeout=5000&socketTimeout=60000
+  SPRING_DATASOURCE_URL: jdbc:mariadb://10.106.205.245:3306/auth_db?connectTimeout=5000&socketTimeout=60000
   SPRING_DATASOURCE_USERNAME: app_user
 
   JWT_ISSUER: santa-log-developer
