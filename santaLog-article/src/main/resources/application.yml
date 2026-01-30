@@ -12,7 +12,7 @@ cloud:
 
 server:
   port: 8081
-
+  forward-headers-strategy: native
 spring:
   thymeleaf:
     cache: false
