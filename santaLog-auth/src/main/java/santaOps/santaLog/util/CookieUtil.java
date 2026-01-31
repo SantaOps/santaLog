@@ -45,11 +45,11 @@ public class CookieUtil {
             if (name.equals(cookie.getName())) {
                 ResponseCookie deleteCookie = ResponseCookie.from(name, "")
                         .path("/")
-                        .maxAge(0)
                         .httpOnly(true)
                         .secure(true)
                         .sameSite("None")
-                        .domain("santalog.cloud")
+                        .domain("santalog.cloud") // 생성할 때 넣었던 도메인과 반드시 일치해야 함
+                        .maxAge(0) // 즉시 만료
                         .build();
                 response.addHeader("Set-Cookie", deleteCookie.toString());
             }

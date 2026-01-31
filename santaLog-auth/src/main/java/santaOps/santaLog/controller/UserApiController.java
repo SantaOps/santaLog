@@ -38,33 +38,22 @@ public class UserApiController {
     @GetMapping("/logout")
     public String logout(HttpServletRequest request, HttpServletResponse response){
 
-        // 3. 쿠키에서 ACCESS_TOKEN 꺼내기
-        String accessToken = CookieUtil.getCookie(request, "ACCESS_TOKEN")
+        CookieUtil.getCookie(request, "ACCESS_TOKEN")
                 .map(Cookie::getValue)
-                .orElse(null);
+                .ifPresent(token -> {
+                    try {
+                        Long userId = tokenProvider.getUserId(token);
+                        refreshTokenService.deleteByUserId(userId);
+                    } catch (Exception e) {
+                        System.err.println(">>> 로그아웃 중 Redis 삭제 실패: " + e.getMessage());
+                    }
+                });
 
-        if (accessToken != null) {
-            try {
-                // 4. 토큰에서 userId 추출
-                Long userId = tokenProvider.getUserId(accessToken);
-
-                // 5. Redis 데이터 삭제
-                refreshTokenService.deleteByUserId(userId);
-            } catch (Exception e) {
-                System.out.println(">>> 토큰 분석 실패 OR Redis 삭제 오류: " + e.getMessage());
-            }
-        }
-
-        // 6. 브라우저 쿠키 삭제
-        Cookie accessTokenCookie = new Cookie("ACCESS_TOKEN", null);
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(0);
-        response.addCookie(accessTokenCookie);
-
-        Cookie refreshCookie = new Cookie("refresh_token", null);
-        refreshCookie.setPath("/");
-        refreshCookie.setMaxAge(0);
-        response.addCookie(refreshCookie);
+        // 2. CookieUtil을 사용하여 브라우저 쿠키 확실히 삭제
+        // (내부적으로 ResponseCookie + Domain + SameSite=None 처리됨)
+        CookieUtil.deleteCookie(request, response, "ACCESS_TOKEN");
+        CookieUtil.deleteCookie(request, response, "refresh_token");
+        CookieUtil.deleteCookie(request, response, "JSESSIONID"); // 세션 쿠키도 함께 제거
 
         return "redirect:https://santalog.cloud:31443/login";
 
