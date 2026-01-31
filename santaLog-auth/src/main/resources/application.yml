@@ -40,11 +40,7 @@ spring:
       password: ${REDIS_PASSWORD}
       sentinel:
         master: ${REDIS_MASTER_NAME}
-        nodes:
-          - ${REDIS_NODE1}
-          - ${REDIS_NODE2}
-          - ${REDIS_NODE3}
-          - ${REDIS_NODE4}
+        nodes: ${SPRING_DATA_REDIS_SENTINEL_NODES}
 
   jpa:
     show-sql: true

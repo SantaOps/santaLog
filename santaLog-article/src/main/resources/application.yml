@@ -45,11 +45,7 @@ spring:
       password: ${REDIS_PASSWORD}
       sentinel:
         master: ${REDIS_MASTER_NAME}
-        nodes:
-          - ${REDIS_NODE1}
-          - ${REDIS_NODE2}
-          - ${REDIS_NODE3}
-          - ${REDIS_NODE4}
+        nodes: ${SPRING_DATA_REDIS_SENTINEL_NODES}
       lettuce:
         pool:
           max-active: 10      # 동시에 사용할 수 있는 최대 커넥션 수
