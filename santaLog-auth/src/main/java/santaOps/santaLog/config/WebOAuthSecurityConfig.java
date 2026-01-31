@@ -1,5 +1,6 @@
 package santaOps.santaLog.config;
 
+import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,12 +15,15 @@ import santaOps.santaLog.config.jwt.TokenProvider;
 import santaOps.santaLog.config.oauth.OAuth2AuthorizationRequestBasedOnCookieRepository;
 import santaOps.santaLog.config.oauth.OAuth2SuccessHandler;
 import santaOps.santaLog.config.oauth.OAuth2UserCustomService;
+import santaOps.santaLog.domain.User;
 import santaOps.santaLog.repository.redis.RefreshTokenRepository;
 import santaOps.santaLog.service.UserService;
 
+import java.time.Duration;
+
 @RequiredArgsConstructor
 @Configuration
-@EnableWebSecurity // 시큐리티 설정을 활성화합니다.
+@EnableWebSecurity
 public class WebOAuthSecurityConfig {
 
     private final OAuth2UserCustomService oAuth2UserCustomService;
@@ -31,26 +35,20 @@ public class WebOAuthSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        // 1. 기본 보안 설정 (CSRF 및 FrameOptions 비활성화)
+        // 1. 기본 보안 설정
         http
                 .csrf(csrf -> csrf.disable())
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
-        // 2. HTTP 기본 인증 및 폼 로그인 비활성화 (JWT 사용 환경)
-        http
-                .httpBasic(httpBasic -> httpBasic.disable())
-                .formLogin(formLogin -> formLogin.disable())
-                .logout(logout -> logout.disable()); // 로그아웃 로직은 컨트롤러에서 처리하도록 비활성화
-
-        // 3. 세션 사용 안 함 (STATELESS)
+        // 2. 세션 정책 설정 (JWT 사용을 위해 STATELESS 유지)
         http
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-        // 4. JWT 인증 필터 추가
+        // 3. JWT 인증 필터 추가
         http
                 .addFilterBefore(tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
-        // 5. URL별 권한 설정
+        // 4. URL별 권한 설정
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/token", "/login", "/signup", "/logout").permitAll()
@@ -60,22 +58,44 @@ public class WebOAuthSecurityConfig {
                         .anyRequest().permitAll()
                 );
 
-        // 6. OAuth2 로그인 설정 (가장 중요!)
+        // 5. 관리자 폼 로그인 설정 (포트 유실 해결 핵심)
+        http
+                .formLogin(form -> form
+                        .loginPage("/admin/login")
+                        .loginProcessingUrl("/auth/admin/login")
+                        .successHandler((request, response, authentication) -> {
+                            // [핵심] 로그인 성공 시 JWT 토큰 생성 및 쿠키 주입
+                            User user = (User) authentication.getPrincipal();
+                            String accessToken = tokenProvider.generateToken(user, Duration.ofDays(1));
+
+                            Cookie cookie = new Cookie("ACCESS_TOKEN", accessToken);
+                            cookie.setPath("/");
+                            cookie.setHttpOnly(true); // 보안 설정
+                            response.addCookie(cookie);
+
+                            // [핵심] 포트 번호를 포함한 전체 경로로 리다이렉트
+                            response.sendRedirect("https://santalog.cloud:31443/articles");
+                        })
+                        .failureUrl("/admin/login?error=id")
+                )
+                .httpBasic(httpBasic -> httpBasic.disable())
+                .logout(logout -> logout.logoutSuccessUrl("/login"));
+
+        // 6. OAuth2 로그인 설정
         http.oauth2Login(oauth2 -> oauth2
                 .loginPage("/login")
                 .authorizationEndpoint(authorization -> authorization
-                        .baseUri("/oauth2/authorization") // 이 주소로 구글 로그인을 시작합니다.
+                        .baseUri("/oauth2/authorization")
                         .authorizationRequestRepository(oAuth2AuthorizationRequestBasedOnCookieRepository()))
                 .redirectionEndpoint(redirection -> redirection
-                        .baseUri("/login/oauth2/code/*")) // 구글이 코드를 보낼 주소
+                        .baseUri("/login/oauth2/code/*"))
                 .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserCustomService))
-                .successHandler(oAuth2SuccessHandler()) // 성공 시 실행될 핸들러
+                .successHandler(oAuth2SuccessHandler())
         );
 
         return http.build();
     }
 
-    // SuccessHandler 빈 등록
     @Bean
     public OAuth2SuccessHandler oAuth2SuccessHandler() {
         return new OAuth2SuccessHandler(
@@ -92,7 +112,6 @@ public class WebOAuthSecurityConfig {
         return new TokenAuthenticationFilter(tokenProvider);
     }
 
-    // Stateless 환경에서 OAuth2 정보를 저장할 쿠키 기반 레포지토리
     @Bean
     public OAuth2AuthorizationRequestBasedOnCookieRepository oAuth2AuthorizationRequestBasedOnCookieRepository() {
         return new OAuth2AuthorizationRequestBasedOnCookieRepository();
