@@ -27,7 +27,7 @@ spring:
             scope:
               - email
               - profile
-            redirect-uri: "http://santalog.cloud:31000/login/oauth2/code/google"
+            redirect-uri: "https://santalog.cloud:31443/login/oauth2/code/google"
 
   servlet:
     multipart:

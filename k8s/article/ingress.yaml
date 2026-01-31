@@ -10,7 +10,7 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-cookie-path: "/ /"
     nginx.ingress.kubernetes.io/use-forwarded-headers: "true"
     nginx.ingress.kubernetes.io/configuration-snippet: |
-      proxy_set_header X-Forwarded-Port 31000;
+      proxy_set_header X-Forwarded-Port 31443;
       proxy_set_header X-Forwarded-Host $host;
 spec:
   rules:
