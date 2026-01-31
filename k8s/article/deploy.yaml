@@ -24,4 +24,4 @@ spec:
                 name: article-secret
           env:
             - name: IMG_PATH
-              value: "https://santalog-s3.s3.ap-northeast-2.amazonaws.com/img"
+              value: "https://santalog-s3.s3.ap-northeast-2.amazonaws.com/img/"

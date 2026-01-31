@@ -66,7 +66,8 @@ public class UserApiController {
         refreshCookie.setMaxAge(0);
         response.addCookie(refreshCookie);
 
-        return "redirect:/login";
+        return "redirect:https://santalog.cloud:31443/login";
+
 
     }
 

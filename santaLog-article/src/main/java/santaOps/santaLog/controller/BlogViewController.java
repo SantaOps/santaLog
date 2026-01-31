@@ -44,9 +44,13 @@ public class BlogViewController {
         for (int i = 0; i < notices.size(); i += chunkSize) {
             noticeChunks.add(notices.subList(i, Math.min(i + chunkSize, notices.size())));
         }
-
+        String imgPath = System.getenv("IMG_PATH");
+        if (imgPath == null || imgPath.isEmpty()) {
+            // 실제 S3 주소나 로컬 경로를 기본값으로 설정하세요
+            imgPath = "https://santalog-s3.s3.ap-northeast-2.amazonaws.com/img/";
+        }
         // 3. 모델에 담기
-        model.addAttribute("IMG_PATH", System.getenv("IMG_PATH"));
+        model.addAttribute(imgPath);
         model.addAttribute("noticeChunks", noticeChunks); // 3개씩 묶인 공지
         model.addAttribute("articles", regularArticles);  // 나머지 일반 글
 

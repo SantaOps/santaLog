@@ -61,8 +61,13 @@ public class CookieUtil {
     }
 
     public static <T> T deserialize(Cookie cookie, Class<T> cls) {
-        return cls.cast(
-                SerializationUtils.deserialize(Base64.getUrlDecoder().decode(cookie.getValue())));
+        if (cookie == null) {
+            // 로그를 남겨서 쿠키가 왜 비었는지 추적 가능하게 함
+            System.out.println("Cookie is null during deserialization");
+            return null;
+        }
+        return cls.cast(SerializationUtils.deserialize(
+                Base64.getUrlDecoder().decode(cookie.getValue())));
     }
 
 

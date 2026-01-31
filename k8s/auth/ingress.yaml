@@ -9,9 +9,14 @@ metadata:
   nginx.ingress.kubernetes.io/proxy-cookie-domain: "auth-service santalog.cloud"
   nginx.ingress.kubernetes.io/proxy-cookie-path: "/ /"
   nginx.ingress.kubernetes.io/use-forwarded-headers: "true"
-#  nginx.ingress.kubernetes.io/configuration-snippet: |
-#    proxy_set_header X-Forwarded-Port 31443;
-#    proxy_set_header X-Forwarded-Proto $scheme;
+    # 1. 주석 해제 및 실제 포트(31443) 명시
+  nginx.ingress.kubernetes.io/configuration-snippet: |
+    proxy_set_header X-Forwarded-Port 31443;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_cookie_flags ~ SameSite=None; # 크롬/최신 브라우저 대응 (HTTPS 필수)
+
+  # 2. SSL Termination을 사용하는 경우 (HTTPS -> HTTP 포워딩 시 필수)
+  nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   rules:
     - host: santalog.cloud
