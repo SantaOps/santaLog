@@ -39,21 +39,12 @@ public class WebOAuthSecurityConfig {
         // 2. HTTP 기본 인증 및 폼 로그인 비활성화 (JWT 사용 환경)
         http
                 .httpBasic(httpBasic -> httpBasic.disable())
-//                .formLogin(formLogin -> formLogin.disable())
-                .formLogin(form -> form
-                        .loginProcessingUrl("/auth/admin/login") // 로그인 처리 URL
-                        .usernameParameter("email")              // ⭐ 핵심
-                        .passwordParameter("password")
-                        .defaultSuccessUrl("/articles", true)
-                        .permitAll()
-                )
+                .formLogin(formLogin -> formLogin.disable())
                 .logout(logout -> logout.disable()); // 로그아웃 로직은 컨트롤러에서 처리하도록 비활성화
 
-        // 3. IF_REQUIRED → 로그인 순간만 세션 사용
+        // 3. 세션 사용 안 함 (STATELESS)
         http
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                );
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         // 4. JWT 인증 필터 추가
         http

@@ -53,8 +53,9 @@ public class AdminAuthController {
         // 3. 현재 서버(8080) SecurityContext 반영
         SecurityContextHolder.getContext().setAuthentication(tokenProvider.getAuthentication(token));
 
-        // 4. 게시글 서비스(8081)로 리다이렉트
-        return "redirect:/articles";
+        // 게시글 서비스로 리다이렉트 주소 고정
+        return "redirect:https://santalog.cloud:31443/articles";
+
 
     }
 
