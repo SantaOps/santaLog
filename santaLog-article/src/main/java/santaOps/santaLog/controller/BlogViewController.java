@@ -50,7 +50,7 @@ public class BlogViewController {
             imgPath = "https://santalog-s3.s3.ap-northeast-2.amazonaws.com/img/";
         }
         // 3. 모델에 담기
-        model.addAttribute(imgPath);
+        model.addAttribute("IMG_PATH", imgPath); //
         model.addAttribute("noticeChunks", noticeChunks); // 3개씩 묶인 공지
         model.addAttribute("articles", regularArticles);  // 나머지 일반 글
 

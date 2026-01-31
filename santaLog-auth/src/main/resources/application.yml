@@ -5,6 +5,12 @@ server:
     remote-ip-header: x-forwarded-for
     protocol-header: x-forwarded-proto
     use-relative-redirects: true
+  servlet:
+    session:
+      cookie:
+        same-site: none
+        secure: true
+        http-only: true
 
 spring:
   thymeleaf:

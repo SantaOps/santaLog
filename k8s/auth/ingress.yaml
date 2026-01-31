@@ -13,7 +13,7 @@ metadata:
       proxy_set_header X-Forwarded-Port 31443;
       proxy_set_header X-Forwarded-Proto https;
       proxy_set_header X-Forwarded-Host $host;
-      proxy_cookie_flags ~ "SameSite=None; Secure";
+      proxy_cookie_path / "/; HTTPOnly; Secure; SameSite=None";
 spec:
   rules:
     - host: santalog.cloud
