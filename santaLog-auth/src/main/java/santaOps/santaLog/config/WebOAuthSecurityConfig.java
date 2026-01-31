@@ -72,12 +72,13 @@ public class WebOAuthSecurityConfig {
         http.oauth2Login(oauth2 -> oauth2
                 .loginPage("/login")
                 .authorizationEndpoint(authorization -> authorization
-                        .baseUri("/oauth2/authorization") // 이 주소로 구글 로그인을 시작합니다.
+                        .baseUri("/oauth2/authorization")
                         .authorizationRequestRepository(oAuth2AuthorizationRequestBasedOnCookieRepository()))
-                .redirectionEndpoint(redirection -> redirection
-                        .baseUri("/login/oauth2/code/*")) // 구글이 코드를 보낼 주소
+                // 1. 이 부분을 수정하거나, 아예 삭제해서 기본값을 쓰게 하세요.
+//                .redirectionEndpoint(redirection -> redirection
+//                        .baseUri("/login/oauth2/code/*")) // 이 패턴이 정확히 매칭되어야 합니다.
                 .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserCustomService))
-                .successHandler(oAuth2SuccessHandler()) // 성공 시 실행될 핸들러
+                .successHandler(oAuth2SuccessHandler())
         );
 
         return http.build();
