@@ -1,6 +1,10 @@
 server:
   port: 8080
   forward-headers-strategy: native
+  tomcat:
+    remote-ip-header: x-forwarded-for
+    protocol-header: x-forwarded-proto
+    use-relative-redirects: true
 
 spring:
   thymeleaf:
