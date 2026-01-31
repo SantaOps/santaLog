@@ -49,9 +49,9 @@
 
                 <figure class="mb-4 text-center">
                     <img class="img-fluid rounded"
-                         th:src="${article.thumbnailUrl != null} ?
-                                   (#strings.startsWith(article.thumbnailUrl, 'http') ? article.thumbnailUrl : IMG_PATH + article.thumbnailUrl) :
-                                   IMG_PATH + 'default.png'"
+                         th:src="${article.thumbnailUrl != null ?
+              (#strings.startsWith(article.thumbnailUrl, 'http') ? article.thumbnailUrl : IMG_PATH + article.thumbnailUrl) :
+              IMG_PATH + 'default.png'}"
                          alt="thumbnail"
                          style="width: 100%; max-height: 400px; object-fit: cover;">
                 </figure>
