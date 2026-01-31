@@ -3,6 +3,7 @@ package santaOps.santaLog.util;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.ResponseCookie;
 import org.springframework.util.SerializationUtils;
 
 import java.util.Base64;
@@ -12,7 +13,6 @@ public class CookieUtil {
 
     public static Optional<Cookie> getCookie(HttpServletRequest request, String name) {
         Cookie[] cookies = request.getCookies();
-
         if (cookies != null && cookies.length > 0) {
             for (Cookie cookie : cookies) {
                 if (cookie.getName().equals(name)) {
@@ -23,36 +23,37 @@ public class CookieUtil {
         return Optional.empty();
     }
 
-    public static void addCookie(HttpServletResponse response,
-                                 String name,
-                                 String value,
-                                 int maxAge) {
+    public static void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
+        // new Cookie() 대신 ResponseCookie 사용 (SameSite 설정을 위함)
+        ResponseCookie cookie = ResponseCookie.from(name, value)
+                .path("/")
+                .httpOnly(true)
+                .secure(true)             // SameSite=None 인 경우 필수
+                .sameSite("None")         // OAuth2 리다이렉트 시 쿠키 유실 방지 필수 설정
+                .domain("santalog.cloud") // www 제거하여 도메인 일치시킴
+                .maxAge(maxAge)
+                .build();
 
-        Cookie cookie = new Cookie(name, value);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);                // HTTPS
-        cookie.setDomain("www.santalog.cloud"); // 도메인 통합
-        cookie.setMaxAge(maxAge);
-
-        response.addCookie(cookie);
+        response.addHeader("Set-Cookie", cookie.toString());
     }
 
     public static void deleteCookie(HttpServletRequest request, HttpServletResponse response, String name) {
         Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            return;
-        }
+        if (cookies == null) return;
 
         for (Cookie cookie : cookies) {
             if (name.equals(cookie.getName())) {
-                cookie.setValue("");
-                cookie.setPath("/");
-                cookie.setMaxAge(0);
-                response.addCookie(cookie);
+                ResponseCookie deleteCookie = ResponseCookie.from(name, "")
+                        .path("/")
+                        .maxAge(0)
+                        .httpOnly(true)
+                        .secure(true)
+                        .sameSite("None")
+                        .domain("santalog.cloud")
+                        .build();
+                response.addHeader("Set-Cookie", deleteCookie.toString());
             }
         }
-
     }
 
     public static String serialize(Object obj) {
@@ -62,14 +63,10 @@ public class CookieUtil {
 
     public static <T> T deserialize(Cookie cookie, Class<T> cls) {
         if (cookie == null) {
-            // 로그를 남겨서 쿠키가 왜 비었는지 추적 가능하게 함
             System.out.println("Cookie is null during deserialization");
             return null;
         }
         return cls.cast(SerializationUtils.deserialize(
                 Base64.getUrlDecoder().decode(cookie.getValue())));
     }
-
-
-
 }

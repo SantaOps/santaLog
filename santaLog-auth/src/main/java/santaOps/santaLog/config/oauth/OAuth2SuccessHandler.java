@@ -3,22 +3,21 @@ package santaOps.santaLog.config.oauth;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponentsBuilder;
 import santaOps.santaLog.config.jwt.TokenProvider;
 import santaOps.santaLog.domain.RefreshToken;
 import santaOps.santaLog.domain.User;
+import santaOps.santaLog.dto.UserCacheDto;
 import santaOps.santaLog.repository.redis.RefreshTokenRepository;
 import santaOps.santaLog.service.UserService;
 import santaOps.santaLog.util.CookieUtil;
 
 import java.io.IOException;
 import java.time.Duration;
-import org.springframework.data.redis.core.RedisTemplate;
-import santaOps.santaLog.dto.UserCacheDto;
 
 @RequiredArgsConstructor
 @Component
@@ -29,8 +28,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     public static final Duration ACCESS_TOKEN_DURATION = Duration.ofDays(1);
     public static final Duration USER_CACHE_DURATION = Duration.ofHours(1);
 
-
-    public static final String REDIRECT_PATH = "https://santalog.cloud:31443/articles";
+    // 상대 경로로 변경하여 인프라(Ingress/포트) 유연성 확보
+    public static final String REDIRECT_PATH = "/articles";
 
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
@@ -56,10 +55,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         addAccessTokenToCookie(response, accessToken);
 
         // 3. 리다이렉트 실행
-        String targetUrl = getTargetUrl();
         clearAuthenticationAttributes(request, response);
-
-        getRedirectStrategy().sendRedirect(request, response, targetUrl);
+        getRedirectStrategy().sendRedirect(request, response, REDIRECT_PATH);
     }
 
     private void saveUserCache(User user) {
@@ -89,11 +86,5 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private void clearAuthenticationAttributes(HttpServletRequest request, HttpServletResponse response) {
         super.clearAuthenticationAttributes(request);
         authorizationRequestRepository.removeAuthorizationRequestCookies(request, response);
-    }
-
-    private String getTargetUrl() {
-        return UriComponentsBuilder.fromUriString(REDIRECT_PATH)
-                .build()
-                .toUriString();
     }
 }
