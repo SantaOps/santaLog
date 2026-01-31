@@ -46,3 +46,6 @@ spec:
                 name: auth-config
             - secretRef:
                 name: auth-secret
+          env:
+            - name: IMG_PATH
+              value: "https://santalog-s3.s3.ap-northeast-2.amazonaws.com/img"
