@@ -4,13 +4,13 @@ metadata:
   name: auth-config
   namespace: santalog-auth
 
-  AUTH_DB_HOST: "authdb-mariadb-galera.auth-db.svc.cluster.local" # 아까 성공한 주소
-  AUTH_DB_PORT: "3306"
-  AUTH_DB_USERNAME: "app_user"
-
 data:
   SPRING_DATASOURCE_URL: jdbc:mariadb://10.106.205.245:3306/auth_db?connectTimeout=5000&socketTimeout=60000
   SPRING_DATASOURCE_USERNAME: app_user
+
+  AUTH_DB_HOST: "authdb-mariadb-galera.auth-db.svc.cluster.local" # 아까 성공한 주소
+  AUTH_DB_PORT: "3306"
+  AUTH_DB_USERNAME: "app_user"
 
   JWT_ISSUER: santa-log-developer
   REDIS_MASTER_NAME: mymaster
