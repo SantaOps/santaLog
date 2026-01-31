@@ -9,8 +9,8 @@
 <body>
 <div class="p-5 mb-5 bg-light">
     <div class="d-flex align-items-center">
-        <a href="/articles" class="mr-4">
-            <img src="/img/logo.png" alt="SantaLog Logo" style="max-height: 80px; width: auto;">
+        <a th:href="@{/articles}" class="mr-4">
+            <img th:src="@{/img/logo.png}" alt="SantaLog Logo" style="max-height: 80px; width: auto;">
         </a>
         <div>
             <h1 class="mb-1 font-weight-bold">
@@ -78,7 +78,6 @@
         if (input.files && input.files[0]) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                // 새로운 파일을 선택했을 때는 FileReader가 만든 임시 주소를 사용하므로 S3 로직과 무관하게 작동함
                 preview.src = e.target.result;
                 preview.style.display = 'inline-block';
             }
@@ -86,6 +85,6 @@
         }
     }
 </script>
-<script src="/js/article.js"></script>
+<script th:src="@{/js/article.js}"></script>
 </body>
 </html>
