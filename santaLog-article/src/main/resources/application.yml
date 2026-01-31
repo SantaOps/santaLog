@@ -66,4 +66,4 @@ jwt:
 
 auth:
   service:
-    url: http://santalog.cloud/auth
+    url: http://auth-service.santalog-auth.svc.cluster.local:8080
