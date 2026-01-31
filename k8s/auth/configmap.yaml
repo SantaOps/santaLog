@@ -4,7 +4,7 @@ metadata:
   name: auth-config
   namespace: santalog-auth
 data:
-  AUTH_DB_HOST: "authdb-mariadb-galera.auth-db.svc.cluster.local"
+  AUTH_DB_HOST: "10.106.205.245"
   AUTH_DB_PORT: "3306"
   AUTH_DB_USERNAME: "app_user"
   JWT_ISSUER: "santa-log-developer"
@@ -16,6 +16,5 @@ data:
   SPRING_MAIN_SERVER_FORWARD-HEADERS-STRATEGY: "NATIVE"
   SERVER_TOMCAT_REMOTEIP_PROTOCOL-HEADER: "x-forwarded-proto"
   SPRING_JPA_PROPERTIES_HIBERNATE_GLOBALLY_QUOTED_IDENTIFIERS: "true"
-  SPRING_JPA_HIBERNATE_DDL-AUTO: "update"
   SPRING_JPA_SHOW-SQL: "true"
   SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
