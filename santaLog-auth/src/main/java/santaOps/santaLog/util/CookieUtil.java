@@ -24,13 +24,12 @@ public class CookieUtil {
     }
 
     public static void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
-        // new Cookie() 대신 ResponseCookie 사용 (SameSite 설정을 위함)
         ResponseCookie cookie = ResponseCookie.from(name, value)
                 .path("/")
                 .httpOnly(true)
-                .secure(true)             // SameSite=None 인 경우 필수
-                .sameSite("None")         // OAuth2 리다이렉트 시 쿠키 유실 방지 필수 설정
-                .domain("santalog.cloud") // www 제거하여 도메인 일치시킴
+                .secure(true)             // SameSite=None 설정을 위해 필수
+                .sameSite("None")         // 크로스 도메인(Google -> 우리 사이트) 쿠키 전송 허용
+                .domain("santalog.cloud") // www 제거: santalog.cloud 및 모든 서브도메인 허용
                 .maxAge(maxAge)
                 .build();
 
@@ -38,22 +37,16 @@ public class CookieUtil {
     }
 
     public static void deleteCookie(HttpServletRequest request, HttpServletResponse response, String name) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null) return;
+        ResponseCookie cookie = ResponseCookie.from(name, "")
+                .path("/")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .domain("santalog.cloud")
+                .maxAge(0)
+                .build();
 
-        for (Cookie cookie : cookies) {
-            if (name.equals(cookie.getName())) {
-                ResponseCookie deleteCookie = ResponseCookie.from(name, "")
-                        .path("/")
-                        .httpOnly(true)
-                        .secure(true)
-                        .sameSite("None")
-                        .domain("santalog.cloud") // 생성할 때 넣었던 도메인과 반드시 일치해야 함
-                        .maxAge(0) // 즉시 만료
-                        .build();
-                response.addHeader("Set-Cookie", deleteCookie.toString());
-            }
-        }
+        response.addHeader("Set-Cookie", cookie.toString());
     }
 
     public static String serialize(Object obj) {
@@ -62,10 +55,7 @@ public class CookieUtil {
     }
 
     public static <T> T deserialize(Cookie cookie, Class<T> cls) {
-        if (cookie == null) {
-            System.out.println("Cookie is null during deserialization");
-            return null;
-        }
+        if (cookie == null) return null;
         return cls.cast(SerializationUtils.deserialize(
                 Base64.getUrlDecoder().decode(cookie.getValue())));
     }
