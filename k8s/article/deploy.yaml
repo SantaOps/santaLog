@@ -17,6 +17,14 @@ spec:
           image: santalog/santa-article:latest
           ports:
             - containerPort: 8081
+          resources:
+            requests:
+              cpu: "100m"      # HPA 계산의 기준점 (0.1 CPU)
+              memory: "256Mi"
+            limits:
+              cpu: "500m"      # 최대 사용 제한
+              memory: "512Mi"
+          # ------------------------------------------
           envFrom:
             - configMapRef:
                 name: article-config
