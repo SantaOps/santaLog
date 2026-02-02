@@ -1,0 +1,62 @@
+# ----------------------------
+# [AuthDB] MariaDB Galera (3 Pod) 설정
+# ----------------------------
+
+# [의미] Galera 노드 수 (StatefulSet pod 수)
+replicaCount: 3
+
+# ----------------------------
+# [비밀번호/계정]
+# ----------------------------
+rootUser:
+  # [의미] root 계정 비번 (기존 프로젝트에서 쓰던 값 그대로 사용)
+  password: "kosa1004"
+
+db:
+  # [의미] WAS가 사용할 데이터베이스/계정 생성(최초 설치 시 생성됨)
+  name: "auth_db"
+  user: "app_user"
+  password: "kosa1004"
+
+galera:
+  mariabackup:
+    # [의미] 노드 조인(SST/IST) 등에 쓰이는 mariabackup 비밀번호 (차트 요구사항)
+    password: "kosa1004"
+
+# ----------------------------
+# [스토리지] Pod별 PVC를 만들고 NFS에 저장
+# ----------------------------
+persistence:
+  enabled: true
+  # [의미] 우리가 만든 NFS StorageClass 사용 (default로 안 만들었으니 WAS 영향 없음)
+  storageClass: "nfs-internal"
+  size: 8Gi
+  # [의미] Pod마다 자기 PVC 하나씩 쓰는 구조이므로 RWO로 둬도 안전(기본값과 동일)
+  accessModes:
+    - ReadWriteOnce
+
+# ----------------------------
+# [스케줄링] 노드 고정 + 1노드 1Pod 분산 강제
+# ----------------------------
+nodeSelector:
+  # [의미] db-role=galera 라벨이 있는 워커에서만 실행되게 제한 (랜덤 방지)
+  db-role: "galera"
+
+# [의미] 같은 노드에 2개 이상 뜨지 못하게 "강제"
+#        노드 1대 장애 시: 남은 2개로 서비스 지속 + 3번째는 Pending(요구사항과 일치)
+podAntiAffinityPreset: "hard"
+
+# ----------------------------
+# [Service] WAS 접속 포인트(기본 ClusterIP)
+# ----------------------------
+service:
+  type: ClusterIP
+  port: 3306
+
+# ----------------------------
+# [이미지] ImagePullBackOff(not found) 해결용: bitnamilegacy 레포로 변경
+# ----------------------------
+image:
+  registry: docker.io
+  repository: bitnamilegacy/mariadb-galera
+  tag: 12.0.2-debian-12-r0
