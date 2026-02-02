@@ -50,3 +50,7 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/santa-auth:${{ github.sha }}
             ${{ secrets.DOCKERHUB_USERNAME }}/santa-auth:latest
+      
+
+
+ 
