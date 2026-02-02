@@ -1,0 +1,41 @@
+name: Push Auth Image to ECR
+
+on:
+  push:
+    branches:
+      - temp-test-branch
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # AWS 인증
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      # ECR 로그인
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+
+      # Docker Hub 이미지 pull
+      - name: Pull image from Docker Hub
+        run: |
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/santa-auth:latest
+
+      # ECR 태그
+      - name: Tag image for ECR
+        run: |
+          docker tag \
+            ${{ secrets.DOCKERHUB_USERNAME }}/santa-auth:latest \
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/santa-auth:latest
+
+      # ECR push
+      - name: Push image to ECR
+        run: |
+          docker push \
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/santa-auth:latest
